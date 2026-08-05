@@ -7,3 +7,17 @@ docker run --name mongodb -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin 
 
 # for getting docker interactive terminal access
 docker exec -it mongodb mongosh -u admin -p admin --authenticationDatabase admin
+
+# For showing all how the data is structured in db
+db.getCollectionNames().forEach(function (collectionName) { print(`\n===== ${collectionName} =====`); printjson(db.getCollection(collectionName).findOne());});
+
+# handy git commands (for rebase)
+git fetch origin
+git stash
+git rebase origin/main
+git status
+nvim edit_file_with_conflicts.txt
+git add edit_file_with_conflicts.txt
+git rebase --continue
+git stash pop
+git push --force-with-lease origin akid
