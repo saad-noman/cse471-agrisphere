@@ -14,8 +14,6 @@
       <div class="hero-actions" v-else>
         <span class="btn-pill">Welcome back, {{ authState.user.name }}!</span>
       </div>
-
-      <p class="hero-footer">© {{ year }} AgriSphere. All rights reserved.</p>
     </section>
   </div>
 </template>

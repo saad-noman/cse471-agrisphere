@@ -7,11 +7,33 @@
   --text-dark: #1f2a1c;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
   background: var(--bg);
   font-family: 'Segoe UI', Arial, sans-serif;
   color: var(--text-dark);
   margin: 0;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+}
+
+.app-footer {
+  padding: 16px;
+  text-align: center;
+  background: #fff;
+  color: var(--text-dark);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* Navbar */
@@ -114,13 +136,6 @@ body {
   flex-wrap: wrap;
 }
 
-.hero-footer {
-  margin-top: 50px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #1c4d20;
-}
-
 /* Login / Register */
 .auth-page {
   display: flex;
@@ -176,3 +191,5 @@ body {
   margin-top: 10px;
   text-align: center;
 }
+
+
