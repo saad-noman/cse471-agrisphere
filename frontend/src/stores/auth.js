@@ -15,8 +15,8 @@ function saveSession(token, user) {
   localStorage.setItem('user', JSON.stringify(user));
 }
 
-export async function register(name, email, password) {
-  const response = await api.post('/auth/register', { name, email, password });
+export async function register(name, email, password, role) {
+  const response = await api.post('/auth/register', { name, email, password, role });
   saveSession(response.data.token, response.data.user);
 }
 
