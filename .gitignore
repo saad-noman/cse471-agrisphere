@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment variables
-.env
+# .env
 
 # Uploaded files
 backend/uploads/*
@@ -23,3 +23,5 @@ npm-debug.log*
 Thumbs.db
 
 .gitkeep
+# database file
+data/
