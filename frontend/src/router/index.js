@@ -4,6 +4,7 @@ import Home from '../pages/Home.vue';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Dashboard from '../pages/Dashboard.vue';
+import Profile from '../pages/Profile.vue';
 import ExpertSearch from '../pages/ExpertSearch.vue';
 import KnowledgeResources from '../pages/KnowledgeResources.vue';
 import Organizations from '../pages/Organizations.vue';
@@ -26,6 +27,7 @@ const routes = [
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/profile', name: 'Profile', component: Profile },
   { path: '/experts', name: 'ExpertSearch', component: ExpertSearch },
   { path: '/knowledge-resources', name: 'KnowledgeResources', component: KnowledgeResources },
   { path: '/organizations', name: 'Organizations', component: Organizations },

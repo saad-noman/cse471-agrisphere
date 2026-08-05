@@ -14,5 +14,14 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// Attach the logged-in user's token to every request, if there is one.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default api;
 

@@ -10,6 +10,7 @@
 
       <template v-if="authState.user">
         <router-link to="/farming-recommendation" class="btn-pill-outline">Crop Recommendation</router-link>
+        <router-link to="/profile" class="btn-pill-outline">Edit Profile</router-link>
         <span class="nav-user">Hi, {{ authState.user.name }}</span>
         <button class="btn-pill" @click="handleLogout">Logout</button>
       </template>
