@@ -25,6 +25,14 @@
           <input v-model="confirmPassword" type="password" class="form-control" required />
         </div>
 
+        <div class="mb-3">
+          <label class="form-label">I am registering as</label>
+          <select v-model="role" class="form-select">
+            <option value="farmer">Farmer</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+
         <button type="submit" class="btn-pill" :disabled="loading">
           {{ loading ? 'Creating account...' : 'Register' }}
         </button>
@@ -48,6 +56,7 @@ const name = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const role = ref('farmer');
 const error = ref('');
 const loading = ref(false);
 const router = useRouter();
@@ -62,7 +71,7 @@ async function handleSubmit() {
 
   loading.value = true;
   try {
-    await register(name.value, email.value, password.value);
+    await register(name.value, email.value, password.value, role.value);
     router.push('/');
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed. Please try again.';

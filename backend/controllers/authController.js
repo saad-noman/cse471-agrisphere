@@ -8,13 +8,21 @@ const createToken = (user) => {
   });
 };
 
+// Roles a user is allowed to pick for themselves at sign-up.
+// 'admin' is intentionally excluded — admin accounts are not self-registerable.
+const PUBLIC_ROLES = ['farmer', 'expert'];
+
 // POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
+    }
+
+    if (role && !PUBLIC_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'Invalid role selection' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -23,7 +31,7 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
+    const user = await User.create({ name, email, password: hashedPassword, role: role || 'farmer' });
 
     const token = createToken(user);
     res.status(201).json({
