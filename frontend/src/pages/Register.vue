@@ -33,6 +33,31 @@
           </select>
         </div>
 
+        <div class="mb-3">
+          <label class="form-label">Phone</label>
+          <input v-model="phone" type="text" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">District</label>
+          <input v-model="district" type="text" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Upazila</label>
+          <input v-model="upazila" type="text" class="form-control" />
+        </div>
+
+        <div class="mb-3" v-if="role === 'expert'">
+          <label class="form-label">Specialization</label>
+          <input
+            v-model="specialization"
+            type="text"
+            class="form-control"
+            placeholder="e.g. Soil Health, Crop Disease"
+          />
+        </div>
+
         <button type="submit" class="btn-pill" :disabled="loading">
           {{ loading ? 'Creating account...' : 'Register' }}
         </button>
@@ -57,6 +82,10 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const role = ref('farmer');
+const phone = ref('');
+const district = ref('');
+const upazila = ref('');
+const specialization = ref('');
 const error = ref('');
 const loading = ref(false);
 const router = useRouter();
@@ -71,7 +100,16 @@ async function handleSubmit() {
 
   loading.value = true;
   try {
-    await register(name.value, email.value, password.value, role.value);
+    await register({
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      role: role.value,
+      phone: phone.value,
+      district: district.value,
+      upazila: upazila.value,
+      specialization: role.value === 'expert' ? specialization.value : undefined,
+    });
     router.push('/');
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed. Please try again.';

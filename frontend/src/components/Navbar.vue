@@ -8,7 +8,7 @@
       <router-link to="/" class="btn-pill-outline">Home</router-link>
 
       <template v-if="authState.user">
-        <span class="nav-user">Hi, {{ authState.user.name }}</span>
+        <router-link to="/profile" class="btn-pill-outline">Edit Profile</router-link>
         <button class="btn-pill" @click="handleLogout">Logout</button>
       </template>
 

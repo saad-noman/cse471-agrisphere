@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Expert = require('../models/Expert');
 
 const createToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -15,7 +16,7 @@ const PUBLIC_ROLES = ['farmer', 'expert'];
 // POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, district, upazila, specialization } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
@@ -31,7 +32,29 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword, role: role || 'farmer' });
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'farmer',
+      phone,
+      district,
+      upazila,
+    });
+
+    // Experts also get a linked Expert profile so they show up in expert search right away.
+    // The rest of the expert-specific fields can be filled in later from the Edit Profile page.
+    if (user.role === 'expert') {
+      await Expert.create({
+        userId: user._id,
+        fullName: name,
+        phone,
+        email,
+        district,
+        upazila,
+        specialization,
+      });
+    }
 
     const token = createToken(user);
     res.status(201).json({
