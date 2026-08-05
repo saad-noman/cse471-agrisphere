@@ -5,16 +5,29 @@ const router = express.Router();
 const {
   submitDiseaseCase,
   searchTags,
+  createTag,
 } = require('../controllers/diseaseController');
 
 const { protect } = require('../middleware/authMiddleware');
+const { requireRole } = require('../middleware/roleMiddleware');
 
 const upload = require('../middleware/uploadMiddleware');
+
 
 // Search/select tags
 router.get('/tags', protect, searchTags);
 
-// Submit disease case
+
+// Expert creates a new tag
+router.post(
+  '/tags',
+  protect,
+  requireRole('expert'),
+  createTag
+);
+
+
+// Farmer submits disease case
 router.post(
   '/',
   protect,
