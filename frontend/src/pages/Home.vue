@@ -7,7 +7,12 @@
         and data-driven agriculture.
       </p>
 
-      <div class="hero-actions" v-if="authState.user?.role === 'farmer'">
+      <div class="hero-actions" v-if="!authState.user">
+        <router-link to="/login" class="btn-pill-outline">Login</router-link>
+        <router-link to="/register" class="btn-pill">Get Started</router-link>
+      </div>
+
+      <div class="hero-actions" v-else-if="authState.user?.role === 'farmer'">
         <router-link to="/disease-submission" class="btn-pill">
           Submit Disease Case
         </router-link>
