@@ -2,11 +2,57 @@ const mongoose = require('mongoose');
 
 const diseaseCaseSchema = new mongoose.Schema(
   {
-    farmer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    cropType: { type: String },
-    symptoms: { type: String },
-    imageUrl: { type: String },
-    status: { type: String },
+    farmer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+
+    crop: {
+      type: {
+        type: String,
+        required: true,
+      },
+      variety: {
+        type: String,
+      },
+      growthStage: {
+        type: String,
+      },
+      age: {
+        type: String,
+      },
+    },
+
+    symptoms: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
+
+    farmingConditions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
+
+    images: [
+      {
+        type: String,
+      },
+    ],
+
+    description: {
+      type: String,
+    },
+
+    status: {
+      type: String,
+      enum: ['pending', 'under_review', 'diagnosed'],
+      default: 'pending',
+    },
   },
   { timestamps: true }
 );
