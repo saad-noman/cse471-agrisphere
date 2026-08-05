@@ -682,3 +682,100 @@ body {
     width: 100%;
   }
 }
+
+/* Tag Management */
+
+.tag-management-page {
+  padding: 30px 16px 50px;
+}
+
+.tag-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.tag-page-header {
+  margin-bottom: 24px;
+}
+
+.tag-page-header h1 {
+  color: var(--green-dark);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tag-page-header p {
+  color: #667064;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tag-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.tag-section-header {
+  margin-bottom: 24px;
+}
+
+.tag-section-header h2 {
+  color: var(--green-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tag-section-header p {
+  color: #707770;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.tag-message {
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.tag-success {
+  background: #e8f5e9;
+  color: #28632e;
+}
+
+.tag-error {
+  background: #fdecea;
+  color: #a93226;
+}
+
+.tag-submit-button {
+  width: 100%;
+  padding: 11px 20px;
+}
+
+.tag-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tag-access-denied {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 0 16px;
+}
+
+.tag-access-denied h1 {
+  color: var(--green-dark);
+  margin-bottom: 8px;
+}
+
+.tag-access-denied p {
+  color: #666;
+  margin: 0;
+}
+

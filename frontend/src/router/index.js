@@ -24,6 +24,7 @@ import Expenses from '../pages/Expenses.vue';
 import Map from '../pages/Map.vue';
 import Weather from '../pages/Weather.vue';
 import Timeline from '../pages/Timeline.vue';
+import TagManagement from '../pages/TagManagement.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -41,6 +42,7 @@ const routes = [
   { path: '/organizations/:id', name: 'OrganizationDetail', component: OrganizationDetail },
   { path: '/recommendations', name: 'Recommendations', component: Recommendations },
   { path: '/disease-submission', name: 'DiseaseSubmission', component: DiseaseSubmission },
+  { path: '/tag-management', name: 'TagManagement', component: TagManagement},
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },
   { path: '/consultations', name: 'Consultations', component: Consultations },
   { path: '/consultations/request', name: 'RequestConsultation', component: RequestConsultation },
