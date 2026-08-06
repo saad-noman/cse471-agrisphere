@@ -4,6 +4,7 @@ const organizationSchema = new mongoose.Schema(
   {
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
+    photo: { type: String },
     category: { type: String },
     description: { type: String },
     address: { type: String },
