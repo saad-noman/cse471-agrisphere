@@ -16,6 +16,7 @@ import Expenses from '../pages/Expenses.vue';
 import Map from '../pages/Map.vue';
 import Weather from '../pages/Weather.vue';
 import Timeline from '../pages/Timeline.vue';
+import FarmingRecommendation from '../pages/FarmingRecommendation.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -34,6 +35,7 @@ const routes = [
   { path: '/map', name: 'Map', component: Map },
   { path: '/weather', name: 'Weather', component: Weather },
   { path: '/timeline', name: 'Timeline', component: Timeline },
+  { path: '/farming-recommendation', name: 'FarmingRecommendation', component: FarmingRecommendation },
 ];
 
 const router = createRouter({

@@ -17,6 +17,7 @@ const expenseRoutes = require('./routes/expenseRoutes');
 const mapRoutes = require('./routes/mapRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const farmingRecommendationRoutes = require('./routes/FarmingRecommendationRoute');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/map', mapRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/farming-recommendation', farmingRecommendationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
