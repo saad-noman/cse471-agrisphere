@@ -8,6 +8,9 @@ import Profile from '../pages/Profile.vue';
 import ExpertSearch from '../pages/ExpertSearch.vue';
 import KnowledgeResources from '../pages/KnowledgeResources.vue';
 import Organizations from '../pages/Organizations.vue';
+import AddOrganization from '../pages/AddOrganization.vue';
+import MyOrganizations from '../pages/MyOrganizations.vue';
+import OrganizationDetail from '../pages/OrganizationDetail.vue';
 import Recommendations from '../pages/Recommendations.vue';
 import DiseaseSubmission from '../pages/DiseaseSubmission.vue';
 import DiagnosisHistory from '../pages/DiagnosisHistory.vue';
@@ -27,6 +30,9 @@ const routes = [
   { path: '/experts', name: 'ExpertSearch', component: ExpertSearch },
   { path: '/knowledge-resources', name: 'KnowledgeResources', component: KnowledgeResources },
   { path: '/organizations', name: 'Organizations', component: Organizations },
+  { path: '/organizations/new', name: 'AddOrganization', component: AddOrganization },
+  { path: '/organizations/mine', name: 'MyOrganizations', component: MyOrganizations },
+  { path: '/organizations/:id', name: 'OrganizationDetail', component: OrganizationDetail },
   { path: '/recommendations', name: 'Recommendations', component: Recommendations },
   { path: '/disease-submission', name: 'DiseaseSubmission', component: DiseaseSubmission },
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },

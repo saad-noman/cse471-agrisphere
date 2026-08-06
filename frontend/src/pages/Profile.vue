@@ -4,6 +4,33 @@
       <h2>Edit Profile</h2>
       <p class="subtitle">Update your account details</p>
 
+      <div class="mb-3" style="text-align: center">
+        <img
+          v-if="photoUrl"
+          :src="photoUrl"
+          alt="Profile photo"
+          style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 10px"
+        />
+        <input type="file" accept="image/*" class="form-control" @change="handlePhotoChange" />
+        <button
+          type="button"
+          class="btn-pill-outline mt-2"
+          :disabled="!selectedPhoto || uploadingPhoto"
+          @click="handlePhotoUpload"
+        >
+          {{ uploadingPhoto ? 'Uploading...' : 'Upload Photo' }}
+        </button>
+        <button
+          v-if="photoUrl"
+          type="button"
+          class="btn btn-outline-danger btn-sm mt-2 ms-2"
+          @click="handlePhotoDelete"
+        >
+          Delete Photo
+        </button>
+        <p v-if="photoError" class="error-text">{{ photoError }}</p>
+      </div>
+
       <form @submit.prevent="handleSubmit">
         <div class="mb-3">
           <label class="form-label">Name</label>
@@ -56,7 +83,27 @@
 
           <div class="mb-3">
             <label class="form-label">Organization</label>
-            <input v-model="organization" type="text" class="form-control" />
+            <input
+              v-model="organization"
+              type="text"
+              class="form-control"
+              placeholder="Search an organization, or type a name if not listed"
+              @input="handleOrganizationInput"
+            />
+            <ul v-if="organizationResults.length" class="list-group mt-1">
+              <li
+                v-for="org in organizationResults"
+                :key="org._id"
+                class="list-group-item list-group-item-action"
+                style="cursor: pointer"
+                @click="selectOrganization(org)"
+              >
+                {{ org.name }}
+              </li>
+            </ul>
+            <p v-if="organizationId" class="auth-switch" style="text-align: left; margin-top: 4px">
+              Linked to an existing organization.
+            </p>
           </div>
 
           <div class="mb-3">
@@ -89,14 +136,35 @@
         <p v-if="error" class="error-text">{{ error }}</p>
         <p v-if="success" class="auth-switch">Profile updated successfully.</p>
       </form>
+
+      <hr />
+      <button type="button" class="btn btn-outline-danger w-100" @click="handleAccountDelete">
+        Delete My Account
+      </button>
+      <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { authState, setUser } from '../stores/auth';
-import { getProfile, updateProfile } from '../services/profileService';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { authState, setUser, logout } from '../stores/auth';
+import {
+  getProfile,
+  updateProfile,
+  uploadProfilePhoto,
+  deleteProfilePhoto,
+  deleteProfile,
+} from '../services/profileService';
+import { searchOrganizations } from '../services/organizationService';
+
+const router = useRouter();
+const deleteError = ref('');
+
+// The backend returns profileImage as "/uploads/xxx.jpg" — the API base URL
+// includes "/api", so that part is stripped to get the plain server URL.
+const serverUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
 
 const name = ref('');
 const email = ref('');
@@ -104,11 +172,19 @@ const phone = ref('');
 const district = ref('');
 const upazila = ref('');
 
+const profileImage = ref('');
+const photoUrl = computed(() => (profileImage.value ? serverUrl + profileImage.value : ''));
+const selectedPhoto = ref(null);
+const uploadingPhoto = ref(false);
+const photoError = ref('');
+
 const specialization = ref('');
 const expertiseCategory = ref('');
 const qualification = ref('');
 const experience = ref(null);
 const organization = ref('');
+const organizationId = ref(null);
+const organizationResults = ref([]);
 const consultationMode = ref('both');
 const address = ref('');
 const availabilityStatus = ref('available');
@@ -127,6 +203,7 @@ onMounted(async () => {
     phone.value = user.phone || '';
     district.value = user.district || '';
     upazila.value = user.upazila || '';
+    profileImage.value = user.profileImage || '';
 
     if (expert) {
       specialization.value = expert.specialization || '';
@@ -134,6 +211,7 @@ onMounted(async () => {
       qualification.value = expert.qualification || '';
       experience.value = expert.experience ?? null;
       organization.value = expert.organization || '';
+      organizationId.value = expert.organizationId || null;
       consultationMode.value = expert.consultationMode || 'both';
       address.value = expert.address || '';
       availabilityStatus.value = expert.availabilityStatus || 'available';
@@ -142,6 +220,73 @@ onMounted(async () => {
     error.value = 'Could not load your profile. Please try again.';
   }
 });
+
+function handlePhotoChange(event) {
+  selectedPhoto.value = event.target.files[0] || null;
+}
+
+async function handlePhotoUpload() {
+  photoError.value = '';
+  uploadingPhoto.value = true;
+
+  try {
+    const response = await uploadProfilePhoto(selectedPhoto.value);
+    profileImage.value = response.data.user.profileImage;
+    setUser(response.data.user);
+    selectedPhoto.value = null;
+  } catch (err) {
+    photoError.value = err.response?.data?.message || 'Could not upload photo. Please try again.';
+  } finally {
+    uploadingPhoto.value = false;
+  }
+}
+
+async function handlePhotoDelete() {
+  photoError.value = '';
+
+  try {
+    const response = await deleteProfilePhoto();
+    profileImage.value = '';
+    setUser(response.data.user);
+  } catch (err) {
+    photoError.value = err.response?.data?.message || 'Could not delete photo. Please try again.';
+  }
+}
+
+async function handleAccountDelete() {
+  deleteError.value = '';
+
+  const confirmed = window.confirm('This will permanently delete your account. Are you sure?');
+  if (!confirmed) return;
+
+  try {
+    await deleteProfile();
+    logout();
+    router.push('/');
+  } catch (err) {
+    deleteError.value = err.response?.data?.message || 'Could not delete account. Please try again.';
+  }
+}
+
+// Typing means the organization is no longer confirmed as a linked one,
+// unless the user clicks one of the matching results below.
+async function handleOrganizationInput() {
+  organizationId.value = null;
+
+  if (!organization.value) {
+    organizationResults.value = [];
+    return;
+  }
+
+  const response = await searchOrganizations(organization.value);
+  organizationResults.value = response.data;
+}
+
+function selectOrganization(org) {
+  organization.value = org.name;
+  organizationId.value = org._id;
+  organizationResults.value = [];
+}
 
 async function handleSubmit() {
   error.value = '';
@@ -159,6 +304,7 @@ async function handleSubmit() {
       qualification: qualification.value,
       experience: experience.value,
       organization: organization.value,
+      organizationId: organizationId.value,
       consultationMode: consultationMode.value,
       address: address.value,
       availabilityStatus: availabilityStatus.value,
