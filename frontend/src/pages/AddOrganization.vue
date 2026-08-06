@@ -1,13 +1,29 @@
 <template>
   <div class="add-organization auth-page">
     <div class="auth-card">
-      <h2>Add Organization</h2>
-      <p class="subtitle">List your organization on AgriSphere</p>
+      <h2>{{ isEditing ? 'Edit Organization' : 'Add Organization' }}</h2>
+      <p class="subtitle">
+        {{ isEditing ? 'Update your organization details' : 'List your organization on AgriSphere' }}
+      </p>
 
-      <form @submit.prevent="handleCreate">
+      <form @submit.prevent="handleSubmit">
         <div class="mb-3">
           <label class="form-label">Name</label>
           <input v-model="form.name" type="text" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Photo</label>
+          <img v-if="existingPhoto" :src="serverUrl + existingPhoto" alt="" class="org-thumb mb-2 d-block" />
+          <button
+            v-if="existingPhoto"
+            type="button"
+            class="btn btn-outline-danger btn-sm mb-2"
+            @click="handlePhotoRemove"
+          >
+            Remove Photo
+          </button>
+          <input type="file" accept="image/*" class="form-control" @change="handlePhotoChange" />
         </div>
 
         <div class="mb-3">
@@ -60,25 +76,34 @@
           <label class="form-check-label" for="isConsultationCenter">This is a consultation center</label>
         </div>
 
-        <button type="submit" class="btn-pill" :disabled="creating">
-          {{ creating ? 'Adding...' : 'Add Organization' }}
+        <button type="submit" class="btn-pill" :disabled="saving">
+          {{ saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Organization' }}
         </button>
 
-        <p v-if="createError" class="error-text">{{ createError }}</p>
+        <p v-if="saveError" class="error-text">{{ saveError }}</p>
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { createOrganization } from '../services/organizationService';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { serverUrl } from '../services/api';
+import {
+  createOrganization,
+  updateOrganization,
+  getOrganization,
+  deleteOrganizationPhoto,
+} from '../services/organizationService';
 
+const route = useRoute();
 const router = useRouter();
+const isEditing = computed(() => !!route.params.id);
 
 const form = ref({
   name: '',
+  photo: null,
   category: '',
   description: '',
   address: '',
@@ -90,20 +115,60 @@ const form = ref({
   openingHours: '',
   isConsultationCenter: false,
 });
-const creating = ref(false);
-const createError = ref('');
+const existingPhoto = ref('');
+const saving = ref(false);
+const saveError = ref('');
 
-async function handleCreate() {
-  createError.value = '';
-  creating.value = true;
+onMounted(async () => {
+  if (!isEditing.value) return;
+
+  const response = await getOrganization(route.params.id);
+  const org = response.data;
+
+  form.value.name = org.name || '';
+  form.value.category = org.category || '';
+  form.value.description = org.description || '';
+  form.value.address = org.address || '';
+  form.value.district = org.district || '';
+  form.value.upazila = org.upazila || '';
+  form.value.contactNumber = org.contactNumber || '';
+  form.value.email = org.email || '';
+  form.value.website = org.website || '';
+  form.value.openingHours = org.openingHours || '';
+  form.value.isConsultationCenter = org.isConsultationCenter || false;
+  existingPhoto.value = org.photo || '';
+});
+
+function handlePhotoChange(event) {
+  form.value.photo = event.target.files[0] || null;
+}
+
+async function handlePhotoRemove() {
+  saveError.value = '';
 
   try {
-    await createOrganization(form.value);
+    await deleteOrganizationPhoto(route.params.id);
+    existingPhoto.value = '';
+  } catch (err) {
+    saveError.value = err.response?.data?.message || 'Could not remove photo. Please try again.';
+  }
+}
+
+async function handleSubmit() {
+  saveError.value = '';
+  saving.value = true;
+
+  try {
+    if (isEditing.value) {
+      await updateOrganization(route.params.id, form.value);
+    } else {
+      await createOrganization(form.value);
+    }
     router.push('/organizations/mine');
   } catch (err) {
-    createError.value = err.response?.data?.message || 'Could not add organization. Please try again.';
+    saveError.value = err.response?.data?.message || 'Could not save organization. Please try again.';
   } finally {
-    creating.value = false;
+    saving.value = false;
   }
 }
 </script>

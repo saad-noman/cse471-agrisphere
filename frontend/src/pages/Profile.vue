@@ -72,8 +72,43 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Qualification</label>
-            <input v-model="qualification" type="text" class="form-control" />
+            <label class="form-label">Biography</label>
+            <textarea v-model="bio" class="form-control" rows="3" placeholder="A short professional biography"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Academic Qualifications</label>
+            <textarea
+              v-model="qualification"
+              class="form-control"
+              rows="3"
+              placeholder="One qualification per line"
+            ></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Awards and Achievements</label>
+            <textarea v-model="awards" class="form-control" rows="3" placeholder="One award per line"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Areas of Expertise</label>
+            <textarea
+              v-model="areasOfExpertise"
+              class="form-control"
+              rows="3"
+              placeholder="One area per line"
+            ></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Research / Professional Experience</label>
+            <textarea
+              v-model="researchExperience"
+              class="form-control"
+              rows="3"
+              placeholder="One entry per line (optional)"
+            ></textarea>
           </div>
 
           <div class="mb-3">
@@ -181,6 +216,10 @@ const photoError = ref('');
 const specialization = ref('');
 const expertiseCategory = ref('');
 const qualification = ref('');
+const bio = ref('');
+const awards = ref('');
+const areasOfExpertise = ref('');
+const researchExperience = ref('');
 const experience = ref(null);
 const organization = ref('');
 const organizationId = ref(null);
@@ -209,6 +248,10 @@ onMounted(async () => {
       specialization.value = expert.specialization || '';
       expertiseCategory.value = expert.expertiseCategory || '';
       qualification.value = expert.qualification || '';
+      bio.value = expert.bio || '';
+      awards.value = expert.awards || '';
+      areasOfExpertise.value = expert.areasOfExpertise || '';
+      researchExperience.value = expert.researchExperience || '';
       experience.value = expert.experience ?? null;
       organization.value = expert.organization || '';
       organizationId.value = expert.organizationId || null;
@@ -278,7 +321,7 @@ async function handleOrganizationInput() {
     return;
   }
 
-  const response = await searchOrganizations(organization.value);
+  const response = await searchOrganizations({ search: organization.value });
   organizationResults.value = response.data;
 }
 
@@ -302,6 +345,10 @@ async function handleSubmit() {
       specialization: specialization.value,
       expertiseCategory: expertiseCategory.value,
       qualification: qualification.value,
+      bio: bio.value,
+      awards: awards.value,
+      areasOfExpertise: areasOfExpertise.value,
+      researchExperience: researchExperience.value,
       experience: experience.value,
       organization: organization.value,
       organizationId: organizationId.value,

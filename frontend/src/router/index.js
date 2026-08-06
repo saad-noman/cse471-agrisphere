@@ -6,6 +6,7 @@ import Register from '../pages/Register.vue';
 import Dashboard from '../pages/Dashboard.vue';
 import Profile from '../pages/Profile.vue';
 import ExpertSearch from '../pages/ExpertSearch.vue';
+import ExpertProfile from '../pages/ExpertProfile.vue';
 import KnowledgeResources from '../pages/KnowledgeResources.vue';
 import Organizations from '../pages/Organizations.vue';
 import AddOrganization from '../pages/AddOrganization.vue';
@@ -32,9 +33,11 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/profile', name: 'Profile', component: Profile },
   { path: '/experts', name: 'ExpertSearch', component: ExpertSearch },
+  { path: '/experts/:id', name: 'ExpertProfile', component: ExpertProfile },
   { path: '/knowledge-resources', name: 'KnowledgeResources', component: KnowledgeResources },
   { path: '/organizations', name: 'Organizations', component: Organizations },
   { path: '/organizations/new', name: 'AddOrganization', component: AddOrganization },
+  { path: '/organizations/edit/:id', name: 'EditOrganization', component: AddOrganization },
   { path: '/organizations/mine', name: 'MyOrganizations', component: MyOrganizations },
   { path: '/organizations/:id', name: 'OrganizationDetail', component: OrganizationDetail },
   { path: '/recommendations', name: 'Recommendations', component: Recommendations },

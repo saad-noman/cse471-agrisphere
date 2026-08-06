@@ -12,13 +12,21 @@
           :key="org._id"
           class="list-group-item d-flex justify-content-between align-items-center"
         >
-          <span>
-            <router-link :to="`/organizations/${org._id}`">{{ org.name }}</router-link>
-            <span v-if="org.district"> — {{ org.district }}</span>
+          <span class="d-flex align-items-center">
+            <img v-if="org.photo" :src="serverUrl + org.photo" alt="" class="org-thumb" />
+            <span>
+              <router-link :to="`/organizations/${org._id}`" class="plain-link">{{ org.name }}</router-link>
+              <span v-if="org.district"> — {{ org.district }}</span>
+            </span>
           </span>
-          <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDelete(org)">
-            Delete
-          </button>
+          <span>
+            <router-link :to="`/organizations/edit/${org._id}`" class="btn btn-outline-secondary btn-sm me-2">
+              Edit
+            </router-link>
+            <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDelete(org)">
+              Delete
+            </button>
+          </span>
         </li>
       </ul>
       <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
@@ -29,6 +37,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { authState } from '../stores/auth';
+import { serverUrl } from '../services/api';
 import { getMyOrganizations, deleteOrganization } from '../services/organizationService';
 import OrganizationSidebar from '../components/OrganizationSidebar.vue';
 

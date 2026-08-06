@@ -14,6 +14,10 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// The API base URL includes "/api"; uploaded file paths (e.g. "/uploads/x.jpg")
+// need the plain server URL instead. Shared here so pages don't recompute it.
+export const serverUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
+
 // Attach the logged-in user's token to every request, if there is one.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

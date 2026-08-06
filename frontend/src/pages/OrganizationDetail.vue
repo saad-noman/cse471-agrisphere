@@ -3,6 +3,7 @@
     <p v-if="error" class="error-text">{{ error }}</p>
 
     <div v-else-if="organization" class="auth-card">
+      <img v-if="organization.photo" :src="serverUrl + organization.photo" alt="" class="org-photo-large" />
       <h2>{{ organization.name }}</h2>
       <p v-if="organization.category" class="subtitle">{{ organization.category }}</p>
 
@@ -39,6 +40,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { serverUrl } from '../services/api';
 import { getOrganization } from '../services/organizationService';
 
 const route = useRoute();
