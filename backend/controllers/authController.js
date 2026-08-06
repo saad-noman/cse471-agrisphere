@@ -11,7 +11,7 @@ const createToken = (user) => {
 
 // Roles a user is allowed to pick for themselves at sign-up.
 // 'admin' is intentionally excluded — admin accounts are not self-registerable.
-const PUBLIC_ROLES = ['farmer', 'expert'];
+const PUBLIC_ROLES = ['farmer', 'expert', 'organization_owner'];
 
 // POST /api/auth/register
 const register = async (req, res) => {

@@ -7,6 +7,8 @@
     <div class="nav-links">
       <router-link to="/" class="btn-pill-outline">Home</router-link>
       <router-link to="/get-weather" class="btn-pill-outline">Weather</router-link>
+      <router-link to="/experts" class="btn-pill-outline">Experts</router-link>
+      <router-link to="/organizations" class="btn-pill-outline">Organizations</router-link>
 
       <template v-if="authState.user">
         <router-link to="/farming-recommendation" class="btn-pill-outline">Crop Recommendation</router-link>

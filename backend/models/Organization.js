@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const organizationSchema = new mongoose.Schema(
   {
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
     category: { type: String },
     description: { type: String },

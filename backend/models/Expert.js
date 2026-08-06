@@ -10,6 +10,7 @@ const expertSchema = new mongoose.Schema(
     qualification: { type: String },
     experience: { type: Number },
     organization: { type: String },
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
     consultationMode: { type: String, enum: ['online', 'offline', 'both'], default: 'both' },
     phone: { type: String },
     email: { type: String },

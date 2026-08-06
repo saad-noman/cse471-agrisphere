@@ -30,6 +30,7 @@
           <select v-model="role" class="form-select">
             <option value="farmer">Farmer</option>
             <option value="expert">Expert</option>
+            <option value="organization_owner">Organization Owner</option>
           </select>
         </div>
 

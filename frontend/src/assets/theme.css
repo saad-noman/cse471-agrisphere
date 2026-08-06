@@ -47,6 +47,8 @@ body {
   justify-content: space-between;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   margin: 16px;
+  position: relative;
+  z-index: 10;
 }
 
 .navbar-agri .logo {
@@ -105,6 +107,33 @@ body {
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
+}
+
+/* Organizations page sidebar (organization owner only) — thin, spans full page height */
+.org-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 130px;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 100px 10px 10px;
+  z-index: 5;
+}
+
+.org-sidebar-btn {
+  width: 100%;
+  font-size: 0.85rem;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.org-content-with-sidebar {
+  margin-left: 130px;
 }
 
 /* Hero (Home page) */
