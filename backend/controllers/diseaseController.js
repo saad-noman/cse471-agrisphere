@@ -1,6 +1,7 @@
 const Disease = require('../models/Disease');
 const DiseaseCase = require('../models/DiseaseCase');
 const Tag = require('../models/Tag');
+const Notification = require('../models/Notification');
 
 // POST /api/diseases
 const submitDiseaseCase = async (req, res) => {
@@ -418,6 +419,61 @@ const getDiseaseCase = async (req, res) => {
   }
 };
 
+const submitDiagnosisReport = async (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const { diseaseName, recommendation, additionalNotes } = req.body;
+
+    if (!diseaseName || !recommendation) {
+      return res.status(400).json({
+        message: 'Disease name and recommendation are required',
+      });
+    }
+
+    const diseaseCase = await DiseaseCase.findById(caseId);
+    if (!diseaseCase) {
+      return res.status(404).json({
+        message: 'Disease case not found',
+      });
+    }
+
+    diseaseCase.diagnosisReport = {
+      expert: req.user.id,
+      expertName: req.user.name || 'Agricultural Expert',
+      diseaseName,
+      recommendation,
+      additionalNotes: additionalNotes || '',
+      createdAt: new Date(),
+    };
+
+    diseaseCase.status = 'resolved';
+    await diseaseCase.save();
+
+    // Create a notification for the farmer
+    await Notification.create({
+      userId: diseaseCase.farmer,
+      message: `An expert has provided a Crop Diagnosis Report for your ${diseaseCase.crop.type} case.`,
+      link: '/diagnosis-history',
+    });
+
+    const populatedCase = await DiseaseCase.findById(caseId)
+      .populate('symptoms', 'name')
+      .populate('farmingConditions', 'name')
+      .populate('farmer', 'name email');
+
+    res.json({
+      message: 'Diagnosis report submitted successfully',
+      diseaseCase: populatedCase,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Failed to submit diagnosis report',
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   submitDiseaseCase,
   searchTags,
@@ -426,6 +482,7 @@ module.exports = {
   getDiseaseCases,
   getDiseaseCase,
   getDiseaseMatches,
+  submitDiagnosisReport,
 
   createDisease,
   getDiseases,

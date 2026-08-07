@@ -10,6 +10,7 @@ const {
   getDiseaseCases,
   getDiseaseCase,
   getDiseaseMatches,
+  submitDiagnosisReport,
 
   createDisease,
   getDiseases,
@@ -40,6 +41,8 @@ router.delete('/library/:id', protect, requireRole('expert'), deleteDisease);
 // List submitted disease cases
 router.get('/', protect, getDiseaseCases);
 
+// Submit diagnosis report (expert only)
+router.post('/:caseId/diagnosis', protect, requireRole('expert'), submitDiagnosisReport);
 // Disease matches
 router.get('/:caseId/matches', protect, getDiseaseMatches);
 
