@@ -13,6 +13,7 @@ import AddOrganization from '../pages/AddOrganization.vue';
 import MyOrganizations from '../pages/MyOrganizations.vue';
 import OrganizationDetail from '../pages/OrganizationDetail.vue';
 import Recommendations from '../pages/Recommendations.vue';
+import DiseaseLibrary from '../pages/DiseaseLibrary.vue';
 import DiseaseSubmission from '../pages/DiseaseSubmission.vue';
 import DiagnosisHistory from '../pages/DiagnosisHistory.vue';
 import Consultations from '../pages/Consultations.vue';
@@ -41,6 +42,7 @@ const routes = [
   { path: '/organizations/mine', name: 'MyOrganizations', component: MyOrganizations },
   { path: '/organizations/:id', name: 'OrganizationDetail', component: OrganizationDetail },
   { path: '/recommendations', name: 'Recommendations', component: Recommendations },
+  { path: '/disease-library', name: 'DiseaseLibrary', component: DiseaseLibrary,},
   { path: '/disease-submission', name: 'DiseaseSubmission', component: DiseaseSubmission },
   { path: '/tag-management', name: 'TagManagement', component: TagManagement},
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },

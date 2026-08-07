@@ -779,3 +779,114 @@ body {
   margin: 0;
 }
 
+/* ============================
+   Diagnosis History
+============================ */
+
+.diagnosis-page {
+  padding: 30px 16px;
+}
+
+.diagnosis-page h1 {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.match-card {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  transition: transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+}
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.chip-green {
+  background: #dff6e4;
+  color: #1e6a37;
+}
+
+.chip-blue {
+  background: #ddeeff;
+  color: #0c4a87;
+}
+
+.chip-gray {
+  background: #ececec;
+  color: #555;
+}
+
+.progress {
+  height: 22px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  font-weight: 600;
+}
+
+.bg-orange {
+  background: #f39c12;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.disease-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: transform .15s ease,
+              box-shadow .15s ease;
+}
+
+.disease-image:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 18px rgba(0,0,0,.15);
+}
+
+.list-group-item {
+  transition: background .15s ease;
+}
+
+.list-group-item:hover {
+  background: #f5f9f5;
+}
+
+.list-group-item.active {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.badge {
+  border-radius: 999px;
+}
