@@ -20,6 +20,10 @@
         <router-link to="/diagnosis-history" class="btn-pill-outline">
           Diagnosis History
         </router-link>
+
+        <router-link to="/farm-records" class="btn-pill">
+          Farm Records
+        </router-link>
       </div>
 
       <div class="hero-actions" v-else-if="authState.user?.role === 'expert'">

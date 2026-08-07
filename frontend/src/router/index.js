@@ -28,10 +28,10 @@ import GetWeather from '../pages/GetWeather.vue';
 import Timeline from '../pages/Timeline.vue';
 import TagManagement from '../pages/TagManagement.vue';
 import FarmingRecommendation from '../pages/FarmingRecommendation.vue';
-
 import ProvideCropDiagnosisReport from '../pages/ProvideCropDiagnosisReport.vue';
 import RequestFarmingExpertise from '../pages/RequestFarmingExpertise.vue';
 import ProvideFarmingExpertise from '../pages/ProvideFarmingExpertise.vue';
+import CropDetails from '../pages/CropDetails.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
@@ -65,6 +65,7 @@ const routes = [
   { path: '/get-weather', name: 'GetWeather', component: GetWeather },
   { path: '/timeline', name: 'Timeline', component: Timeline },
   { path: '/farming-recommendation', name: 'FarmingRecommendation', component: FarmingRecommendation },
+  { path: '/farm-records/:id', name: 'CropDetails', component: CropDetails },
 ];
 
 const router = createRouter({
