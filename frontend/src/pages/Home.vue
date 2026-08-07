@@ -16,14 +16,14 @@
           Diagnosis History
         </router-link>
 
-        <router-link to="/farm-records" class="btn-pill">
+        <router-link to="/farm-records" class="btn-pill-outline">
           Farm Records
         </router-link>
       </div>
 
       <div class="hero-actions" v-else-if="authState.user?.role === 'expert'">
         <router-link to="/tag-management" class="btn-pill">
-          Manage Disease Tags
+          Manage Tags
         </router-link>
 
         <router-link to="/disease-library" class="btn-pill-outline">
