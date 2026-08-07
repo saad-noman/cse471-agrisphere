@@ -21,7 +21,7 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
-const upload = require('../middleware/uploadMiddleware');
+const { diseaseUpload } = require('../middleware/uploadMiddleware');
 
 // Search/select tags
 router.get('/tags', protect, searchTags);
@@ -31,7 +31,7 @@ router.delete( '/tags/:tagId', protect, requireRole('expert'), deleteTag );
 router.post('/tags', protect, requireRole('expert'), createTag);
 
 // Submit disease case
-router.post('/', protect, upload.array('images', 5), submitDiseaseCase);
+router.post('/', protect, diseaseUpload.array('images', 5), submitDiseaseCase);
 
 // Disease library
 router.get('/library', protect, getDiseases);
