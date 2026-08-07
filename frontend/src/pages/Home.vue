@@ -22,8 +22,8 @@
           Manage Disease Tags
         </router-link>
 
-        <router-link to="/consultations" class="btn-pill">
-          View Consultations
+        <router-link to="/disease-library" class="btn-pill-outline">
+          Disease Library
         </router-link>
       </div>
 
