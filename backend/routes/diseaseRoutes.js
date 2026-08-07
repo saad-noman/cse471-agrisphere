@@ -6,6 +6,7 @@ const {
   submitDiseaseCase,
   searchTags,
   createTag,
+  deleteTag,
 
   getDiseaseCases,
   getDiseaseCase,
@@ -24,6 +25,7 @@ const upload = require('../middleware/uploadMiddleware');
 
 // Search/select tags
 router.get('/tags', protect, searchTags);
+router.delete( '/tags/:tagId', protect, requireRole('expert'), deleteTag );
 
 // Expert creates a new tag
 router.post('/tags', protect, requireRole('expert'), createTag);

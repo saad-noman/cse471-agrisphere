@@ -19,6 +19,12 @@ const mapRoutes = require('./routes/mapRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const cropRoutes = require('./routes/cropRoutes');
+const productionRoutes = require('./routes/productionRoutes');
+const fertilizerRoutes = require('./routes/fertilizerRoutes');
+const fertilizerRecordRoutes = require('./routes/fertilizerRecordRoutes');
+const pesticideRoutes = require('./routes/pesticideRoutes');
+const pesticideRecordRoutes = require('./routes/pesticideRecordRoutes');
 
 const app = express();
 
@@ -44,6 +50,12 @@ app.use('/api/map', mapRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/crops', cropRoutes);
+app.use('/api/production', productionRoutes);
+app.use('/api/fertilizers', fertilizerRoutes);
+app.use('/api/fertilizer-records', fertilizerRecordRoutes);
+app.use('/api/pesticides', pesticideRoutes);
+app.use('/api/pesticide-records', pesticideRecordRoutes);
 
 const PORT = process.env.PORT || 5000;
 

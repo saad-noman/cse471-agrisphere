@@ -418,10 +418,55 @@ const getDiseaseCase = async (req, res) => {
   }
 };
 
+// DELETE /api/diseases/tags/:tagId
+const deleteTag = async (req, res) => {
+  try {
+    const { tagId } = req.params;
+
+    const tag = await Tag.findById(tagId);
+
+    if (!tag) {
+      return res.status(404).json({
+        message: 'Tag not found',
+      });
+    }
+
+    // Prevent deleting tags that are currently in use
+    const inDiseaseCases = await DiseaseCase.exists({
+      $or: [
+        { symptoms: tagId },
+        { farmingConditions: tagId },
+      ],
+    });
+
+    const inDiseaseLibrary = await Disease.exists({
+      symptoms: tagId,
+    });
+
+    if (inDiseaseCases || inDiseaseLibrary) {
+      return res.status(400).json({
+        message: 'Cannot delete tag because it is currently in use',
+      });
+    }
+
+    await tag.deleteOne();
+
+    res.json({
+      message: 'Tag deleted successfully',
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: 'Failed to delete tag',
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   submitDiseaseCase,
   searchTags,
   createTag,
+  deleteTag,
 
   getDiseaseCases,
   getDiseaseCase,
