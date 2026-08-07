@@ -5,6 +5,7 @@ const appointmentSchema = new mongoose.Schema(
     consultationRequestId: { type: mongoose.Schema.Types.ObjectId, ref: 'ConsultationRequest' },
     farmerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     expertId: { type: mongoose.Schema.Types.ObjectId, ref: 'Expert' },
+    title: { type: String },
     date: { type: Date },
     time: { type: String },
     consultationType: { type: String, enum: ['online', 'offline'] },

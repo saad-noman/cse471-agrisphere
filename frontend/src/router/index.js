@@ -17,6 +17,9 @@ import DiseaseLibrary from '../pages/DiseaseLibrary.vue';
 import DiseaseSubmission from '../pages/DiseaseSubmission.vue';
 import DiagnosisHistory from '../pages/DiagnosisHistory.vue';
 import Consultations from '../pages/Consultations.vue';
+import RequestConsultation from '../pages/RequestConsultation.vue';
+import PendingRequests from '../pages/PendingRequests.vue';
+import ConsultationRecord from '../pages/ConsultationRecord.vue';
 import FarmRecords from '../pages/FarmRecords.vue';
 import Expenses from '../pages/Expenses.vue';
 import Map from '../pages/Map.vue';
@@ -46,6 +49,9 @@ const routes = [
   { path: '/tag-management', name: 'TagManagement', component: TagManagement},
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },
   { path: '/consultations', name: 'Consultations', component: Consultations },
+  { path: '/consultations/request', name: 'RequestConsultation', component: RequestConsultation },
+  { path: '/consultations/pending', name: 'PendingRequests', component: PendingRequests },
+  { path: '/consultations/records', name: 'ConsultationRecord', component: ConsultationRecord },
   { path: '/farm-records', name: 'FarmRecords', component: FarmRecords },
   { path: '/expenses', name: 'Expenses', component: Expenses },
   { path: '/map', name: 'Map', component: Map },
