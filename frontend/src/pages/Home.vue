@@ -21,7 +21,7 @@
           Diagnosis History
         </router-link>
 
-        <router-link to="/farm-records" class="btn-pill">
+        <router-link to="/farm-records" class="btn-pill-outline">
           Farm Records
         </router-link>
       </div>
