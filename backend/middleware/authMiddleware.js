@@ -25,6 +25,26 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Optional auth: attaches user if token is present, but continues if not.
+const optionalProtect = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('-password');
+      if (user) {
+        req.user = user;
+      }
+    } catch (err) {
+      // Token expired or invalid, continue without req.user
+    }
+  }
+
+  next();
+};
+
 // Restricts a route to specific roles. Use after `protect`.
 // Example: router.get('/', protect, authorize('admin'), handler)
 const authorize = (...roles) => {
@@ -36,4 +56,5 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { protect, authorize };
+module.exports = { protect, optionalProtect, authorize };
+
