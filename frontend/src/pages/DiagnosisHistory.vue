@@ -227,12 +227,58 @@ onMounted(loadCases);
             </p>
 
             <p>
-
               <strong>Status:</strong>
-
-              {{ selectedCase.status }}
-
+              <span
+                class="badge ms-2 fs-6"
+                :class="{
+                  'bg-success': selectedCase.status === 'resolved' || selectedCase.status === 'diagnosed',
+                  'bg-warning text-dark': selectedCase.status === 'pending' || selectedCase.status === 'under_review'
+                }"
+              >
+                {{ selectedCase.status === 'resolved' ? '✓ Resolved' : selectedCase.status }}
+              </span>
             </p>
+
+            <!-- OFFICIAL EXPERT DIAGNOSIS REPORT -->
+            <div
+              v-if="selectedCase.diagnosisReport"
+              class="alert alert-success border border-success mt-3 p-3"
+            >
+              <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                <h4 class="alert-heading mb-0 text-success fw-bold">
+                  📋 Official Expert Diagnosis Report
+                </h4>
+                <span class="badge bg-success">Resolved</span>
+              </div>
+
+              <p class="mb-2">
+                <strong>Diagnosed Disease:</strong>
+                <span class="fs-5 fw-bold text-success ms-1">
+                  {{ selectedCase.diagnosisReport.diseaseName }}
+                </span>
+              </p>
+
+              <div class="mb-2">
+                <strong>Recommendation & Treatment:</strong>
+                <p class="mb-0 mt-1 text-dark" style="white-space: pre-line;">
+                  {{ selectedCase.diagnosisReport.recommendation }}
+                </p>
+              </div>
+
+              <div v-if="selectedCase.diagnosisReport.additionalNotes" class="mb-2">
+                <strong>Additional Notes:</strong>
+                <p class="mb-0 mt-1 text-muted" style="white-space: pre-line;">
+                  {{ selectedCase.diagnosisReport.additionalNotes }}
+                </p>
+              </div>
+
+              <div class="text-end text-muted small mt-2">
+                Diagnosed by: <strong>{{ selectedCase.diagnosisReport.expertName || 'Agricultural Expert' }}</strong>
+                <span v-if="selectedCase.diagnosisReport.createdAt">
+                  on {{ new Date(selectedCase.diagnosisReport.createdAt).toLocaleDateString() }}
+                </span>
+              </div>
+            </div>
 
             <hr>
 

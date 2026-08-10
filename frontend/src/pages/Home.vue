@@ -18,7 +18,11 @@
       </div>
 
       <div class="hero-actions" v-else-if="authState.user?.role === 'expert'">
-        <router-link to="/tag-management" class="btn-pill">
+        <router-link to="/provide-crop-diagnosis-report" class="btn-pill">
+          Provide Crop Diagnosis Report
+        </router-link>
+
+        <router-link to="/tag-management" class="btn-pill-outline">
           Manage Disease Tags
         </router-link>
 

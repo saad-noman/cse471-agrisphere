@@ -2,9 +2,21 @@ const mongoose = require('mongoose');
 
 const organizationSchema = new mongoose.Schema(
   {
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
+    photo: { type: String },
+    category: { type: String },
     description: { type: String },
-    location: { type: Object },
+    address: { type: String },
+    district: { type: String },
+    upazila: { type: String },
+    latitude: { type: Number },
+    longitude: { type: Number },
+    contactNumber: { type: String },
+    email: { type: String },
+    website: { type: String },
+    openingHours: { type: String },
+    isConsultationCenter: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -19,11 +19,13 @@ const mapRoutes = require('./routes/mapRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const farmingRecommendationRoutes = require('./routes/FarmingRecommendationRoute');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 app.use(
   '/uploads',
@@ -42,7 +44,9 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/map', mapRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/farming-recommendation', farmingRecommendationRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -51,3 +55,4 @@ connectDB().then(() => {
     console.log(`Server running at http://localhost:${PORT}`);
   });
 });
+

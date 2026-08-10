@@ -4,14 +4,22 @@ import Home from '../pages/Home.vue';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Dashboard from '../pages/Dashboard.vue';
+import Profile from '../pages/Profile.vue';
 import ExpertSearch from '../pages/ExpertSearch.vue';
+import ExpertProfile from '../pages/ExpertProfile.vue';
 import KnowledgeResources from '../pages/KnowledgeResources.vue';
 import Organizations from '../pages/Organizations.vue';
+import AddOrganization from '../pages/AddOrganization.vue';
+import MyOrganizations from '../pages/MyOrganizations.vue';
+import OrganizationDetail from '../pages/OrganizationDetail.vue';
 import Recommendations from '../pages/Recommendations.vue';
 import DiseaseLibrary from '../pages/DiseaseLibrary.vue';
 import DiseaseSubmission from '../pages/DiseaseSubmission.vue';
 import DiagnosisHistory from '../pages/DiagnosisHistory.vue';
 import Consultations from '../pages/Consultations.vue';
+import RequestConsultation from '../pages/RequestConsultation.vue';
+import PendingRequests from '../pages/PendingRequests.vue';
+import ConsultationRecord from '../pages/ConsultationRecord.vue';
 import FarmRecords from '../pages/FarmRecords.vue';
 import Expenses from '../pages/Expenses.vue';
 import Map from '../pages/Map.vue';
@@ -20,20 +28,32 @@ import Timeline from '../pages/Timeline.vue';
 import TagManagement from '../pages/TagManagement.vue';
 import FarmingRecommendation from '../pages/FarmingRecommendation.vue';
 
+import ProvideCropDiagnosisReport from '../pages/ProvideCropDiagnosisReport.vue';
+
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/profile', name: 'Profile', component: Profile },
   { path: '/experts', name: 'ExpertSearch', component: ExpertSearch },
+  { path: '/experts/:id', name: 'ExpertProfile', component: ExpertProfile },
   { path: '/knowledge-resources', name: 'KnowledgeResources', component: KnowledgeResources },
   { path: '/organizations', name: 'Organizations', component: Organizations },
+  { path: '/organizations/new', name: 'AddOrganization', component: AddOrganization },
+  { path: '/organizations/edit/:id', name: 'EditOrganization', component: AddOrganization },
+  { path: '/organizations/mine', name: 'MyOrganizations', component: MyOrganizations },
+  { path: '/organizations/:id', name: 'OrganizationDetail', component: OrganizationDetail },
   { path: '/recommendations', name: 'Recommendations', component: Recommendations },
-  { path: '/disease-library', name: 'DiseaseLibrary', component: DiseaseLibrary,},
+  { path: '/disease-library', name: 'DiseaseLibrary', component: DiseaseLibrary },
   { path: '/disease-submission', name: 'DiseaseSubmission', component: DiseaseSubmission },
-  { path: '/tag-management', name: 'TagManagement', component: TagManagement},
+  { path: '/tag-management', name: 'TagManagement', component: TagManagement },
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },
+  { path: '/provide-crop-diagnosis-report', name: 'ProvideCropDiagnosisReport', component: ProvideCropDiagnosisReport },
   { path: '/consultations', name: 'Consultations', component: Consultations },
+  { path: '/consultations/request', name: 'RequestConsultation', component: RequestConsultation },
+  { path: '/consultations/pending', name: 'PendingRequests', component: PendingRequests },
+  { path: '/consultations/records', name: 'ConsultationRecord', component: ConsultationRecord },
   { path: '/farm-records', name: 'FarmRecords', component: FarmRecords },
   { path: '/expenses', name: 'Expenses', component: Expenses },
   { path: '/map', name: 'Map', component: Map },

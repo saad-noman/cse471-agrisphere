@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { listExperts, getExpert } = require('../controllers/expertController');
 
-// TODO: expert search & filtering routes
+router.get('/', listExperts);
+router.get('/:id', getExpert);
 
 module.exports = router;
