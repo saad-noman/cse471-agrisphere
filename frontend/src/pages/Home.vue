@@ -35,6 +35,9 @@
         <router-link to="/expense-management" class="btn-pill-outline">
           Manage Expenses
         </router-link>
+        <router-link to="/seasonal-performance" class="btn-pill-outline">
+          Seasonal Performance
+        </router-link>
       </div>
 
       <div class="hero-actions" v-else-if="authState.user?.role === 'expert'">

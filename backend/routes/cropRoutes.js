@@ -27,6 +27,10 @@ const {
 
 const { protect } = require('../middleware/authMiddleware');
 
+const {
+  getCropPerformance,
+} = require('../controllers/performanceController');
+
 router.post('/', protect, createCrop);
 
 router.get('/', protect, getMyCrops);
@@ -42,6 +46,8 @@ router.post('/:cropId/fertilizers', protect, createFertilizerRecord);
 router.get( '/:cropId/production', protect, getProductionRecords);
 
 router.post( '/:cropId/production', protect, createProductionRecord);
+
+router.get('/:cropId/performance', protect, getCropPerformance);
 
 router.get('/:cropId', protect, getCrop);
 
