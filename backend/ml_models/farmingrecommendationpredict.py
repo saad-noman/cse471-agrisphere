@@ -4,10 +4,10 @@ import joblib
 import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'ml_models', 'best_gb_model.pkl')
-SCALER_PATH = os.path.join(BASE_DIR, 'ml_models', 'scaler.pkl')
-ENCODER_PATH = os.path.join(BASE_DIR, 'ml_models', 'label_encoder.pkl')
-POLY_PATH = os.path.join(BASE_DIR, 'ml_models', 'poly_transform.pkl')
+MODEL_PATH = os.path.join(BASE_DIR, 'best_gb_model.pkl')
+SCALER_PATH = os.path.join(BASE_DIR, 'scaler.pkl')
+ENCODER_PATH = os.path.join(BASE_DIR, 'label_encoder.pkl')
+POLY_PATH = os.path.join(BASE_DIR, 'poly_transform.pkl')
 
 
 def load_artifacts():

@@ -20,11 +20,12 @@ const predictCrop = (req, res) => {
 
     const input = requiredFields.map((field) => payload[field]);
     const pythonExecutable = process.env.PYTHON || process.env.PYTHON_PATH || 'python';
-    const scriptPath = path.join(__dirname, '..', 'farmingrecommendationpredict.py');
+    const scriptPath = path.join(__dirname, '..', 'ml_models', 'farmingrecommendationpredict.py');
 
     const pythonProcess = spawn(pythonExecutable, [scriptPath, ...input], {
-      cwd: path.join(__dirname, '..'),
+      cwd: path.join(__dirname, '..', 'ml_models'),
     });
+
 
     let stdout = '';
     let stderr = '';
