@@ -267,7 +267,7 @@ onMounted(loadCases);
                     'bg-success': selectedCase.status === 'resolved',
                   }"
                 >
-                  {{ selectedCase.status === 'resolved' ? '✓ Resolved' : '● Pending Review' }}
+                  {{ selectedCase.status === 'resolved' ? 'Resolved' : 'Pending Review' }}
                 </span>
               </div>
 
@@ -298,7 +298,7 @@ onMounted(loadCases);
                 <h5 class="fw-bold mb-2">Reported Symptoms</h5>
                 <div v-if="selectedCase.symptoms?.length > 0" class="d-flex flex-wrap gap-2 mb-3">
                   <span v-for="s in selectedCase.symptoms" :key="s._id" class="badge bg-success-subtle text-success border border-success px-3 py-2">
-                    🍂 {{ s.name }}
+                    {{ s.name }}
                   </span>
                 </div>
                 <p v-else class="text-muted small">No specific symptom tags attached.</p>
@@ -306,7 +306,7 @@ onMounted(loadCases);
                 <h5 class="fw-bold mb-2">Farming Conditions</h5>
                 <div v-if="selectedCase.farmingConditions?.length > 0" class="d-flex flex-wrap gap-2">
                   <span v-for="c in selectedCase.farmingConditions" :key="c._id" class="badge bg-info-subtle text-info border border-info px-3 py-2">
-                    🌧️ {{ c.name }}
+                    {{ c.name }}
                   </span>
                 </div>
                 <p v-else class="text-muted small">No farming conditions specified.</p>
@@ -337,7 +337,7 @@ onMounted(loadCases);
 
               <!-- System Matching Suggestions -->
               <div v-if="matches.length > 0" class="mb-4 p-3 bg-success-subtle border border-success-subtle rounded">
-                <h6 class="fw-bold text-success mb-2">💡 System Symptom Matches</h6>
+                <h6 class="fw-bold text-success mb-2">System Symptom Matches</h6>
                 <div class="d-flex flex-wrap gap-2">
                   <button
                     v-for="m in matches"
@@ -354,7 +354,7 @@ onMounted(loadCases);
               <!-- DIAGNOSIS REPORT SECTION -->
               <div class="border-top pt-4 mt-4">
                 <div class="d-flex align-items-center mb-3">
-                  <h4 class="fw-bold mb-0 text-success">📋 Crop Diagnosis Report</h4>
+                  <h4 class="fw-bold mb-0 text-success">Crop Diagnosis Report</h4>
                 </div>
 
                 <!-- Existing Report View -->
@@ -444,30 +444,3 @@ onMounted(loadCases);
   </div>
 </template>
 
-<style scoped>
-.diagnosis-report-page {
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 80px);
-}
-
-.page-title {
-  color: #2d5a27;
-  font-weight: 700;
-}
-
-.case-list .list-group-item.active {
-  background-color: #2d5a27;
-  border-color: #2d5a27;
-  color: #ffffff;
-}
-
-.case-list .list-group-item.active .text-muted {
-  color: #d1e7dd !important;
-}
-
-.style-img {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-}
-</style>

@@ -795,3 +795,86 @@ body {
 .badge {
   border-radius: 999px;
 }
+
+/* Diagnosis Report & Farming Expertise Feature Styles */
+.diagnosis-report-page,
+.farming-expertise-page,
+.provide-expertise-page {
+  background-color: var(--bg);
+  min-height: calc(100vh - 80px);
+}
+
+.page-title {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.case-list .list-group-item.active,
+.request-list .list-group-item.active {
+  background-color: var(--green-dark);
+  border-color: var(--green-dark);
+  color: #ffffff;
+}
+
+.case-list .list-group-item.active .text-muted,
+.request-list .list-group-item.active .text-muted {
+  color: #d1e7dd !important;
+}
+
+.style-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.max-img-height {
+  max-height: 350px;
+  object-fit: contain;
+}
+
+.max-stock-grid {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.stock-card {
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.stock-card:hover {
+  border-color: var(--green-dark) !important;
+  transform: translateY(-2px);
+}
+
+.stock-card.selected {
+  border: 2px solid var(--green-dark) !important;
+  background-color: #d1e7dd;
+}
+
+.stock-thumb {
+  height: 60px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.stock-title {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.clickable-preview {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.clickable-preview:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+

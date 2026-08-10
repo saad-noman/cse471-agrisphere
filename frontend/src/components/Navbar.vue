@@ -13,6 +13,11 @@
 
       <!-- FARMER NAVIGATION -->
       <template v-if="authState.user?.role === 'farmer'">
+        <!-- Farming Expertise Link -->
+        <router-link to="/farming-expertise/request" class="btn-pill-outline" @click="closeMenus">
+          Farming Expertise
+        </router-link>
+
         <!-- Diagnosis Dropdown -->
         <div class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
@@ -38,6 +43,11 @@
 
       <!-- EXPERT NAVIGATION -->
       <template v-else-if="authState.user?.role === 'expert'">
+        <!-- Farming Expertise Link -->
+        <router-link to="/farming-expertise/provide" class="btn-pill-outline" @click="closeMenus">
+          Farming Expertise
+        </router-link>
+
         <!-- Diagnosis Dropdown -->
         <div class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
