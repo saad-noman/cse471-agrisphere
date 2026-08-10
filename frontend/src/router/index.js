@@ -29,6 +29,9 @@ import Timeline from '../pages/Timeline.vue';
 import TagManagement from '../pages/TagManagement.vue';
 import FarmingRecommendation from '../pages/FarmingRecommendation.vue';
 
+import ProvideCropDiagnosisReport from '../pages/ProvideCropDiagnosisReport.vue';
+import RequestFarmingExpertise from '../pages/RequestFarmingExpertise.vue';
+import ProvideFarmingExpertise from '../pages/ProvideFarmingExpertise.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
@@ -48,6 +51,9 @@ const routes = [
   { path: '/disease-submission', name: 'DiseaseSubmission', component: DiseaseSubmission },
   { path: '/tag-management', name: 'TagManagement', component: TagManagement},
   { path: '/diagnosis-history', name: 'DiagnosisHistory', component: DiagnosisHistory },
+  { path: '/provide-crop-diagnosis-report', name: 'ProvideCropDiagnosisReport', component: ProvideCropDiagnosisReport },
+  { path: '/farming-expertise/request', name: 'RequestFarmingExpertise', component: RequestFarmingExpertise },
+  { path: '/farming-expertise/provide', name: 'ProvideFarmingExpertise', component: ProvideFarmingExpertise },
   { path: '/consultations', name: 'Consultations', component: Consultations },
   { path: '/consultations/request', name: 'RequestConsultation', component: RequestConsultation },
   { path: '/consultations/pending', name: 'PendingRequests', component: PendingRequests },

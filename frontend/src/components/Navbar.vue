@@ -10,26 +10,62 @@
       <router-link to="/experts" class="btn-pill-outline">Experts</router-link>
       <router-link to="/organizations" class="btn-pill-outline">Organizations</router-link>
 
-      <div v-if="authState.user?.role === 'farmer'" class="nav-dropdown">
-        <button type="button" class="btn-pill-outline" @click="showConsultMenu = !showConsultMenu">
-          Consultation
-        </button>
-        <div v-if="showConsultMenu" class="nav-dropdown-menu">
-          <router-link to="/consultations/request" @click="showConsultMenu = false">Request Consultation</router-link>
-          <router-link to="/consultations" @click="showConsultMenu = false">My Consultations</router-link>
-        </div>
-      </div>
+      <!-- FARMER NAVIGATION -->
+      <template v-if="authState.user?.role === 'farmer'">
+        <router-link to="/farming-expertise/request" class="btn-pill-outline" @click="closeMenus">
+          Farming Expertise
+        </router-link>
 
-      <div v-if="authState.user?.role === 'expert'" class="nav-dropdown">
-        <button type="button" class="btn-pill-outline" @click="showConsultMenu = !showConsultMenu">
-          Consultation
-        </button>
-        <div v-if="showConsultMenu" class="nav-dropdown-menu">
-          <router-link to="/consultations/pending" @click="showConsultMenu = false">Pending Requests</router-link>
-          <router-link to="/consultations/records" @click="showConsultMenu = false">Consultation Record</router-link>
+        <div class="nav-dropdown">
+          <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
+            Diagnosis
+          </button>
+          <div v-if="showDiagnosisMenu" class="nav-dropdown-menu">
+            <router-link to="/disease-submission" @click="closeMenus">Submit Disease Case</router-link>
+            <router-link to="/diagnosis-history" @click="closeMenus">Diagnosis History</router-link>
+          </div>
         </div>
-      </div>
 
+        <div class="nav-dropdown">
+          <button type="button" class="btn-pill-outline" @click="toggleConsultMenu">
+            Consultation
+          </button>
+          <div v-if="showConsultMenu" class="nav-dropdown-menu">
+            <router-link to="/consultations/request" @click="closeMenus">Request Consultation</router-link>
+            <router-link to="/consultations" @click="closeMenus">My Consultations</router-link>
+          </div>
+        </div>
+      </template>
+
+      <!-- EXPERT NAVIGATION -->
+      <template v-else-if="authState.user?.role === 'expert'">
+        <router-link to="/farming-expertise/provide" class="btn-pill-outline" @click="closeMenus">
+          Farming Expertise
+        </router-link>
+
+        <div class="nav-dropdown">
+          <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
+            Diagnosis
+          </button>
+          <div v-if="showDiagnosisMenu" class="nav-dropdown-menu">
+            <router-link to="/provide-crop-diagnosis-report" @click="closeMenus">Provide Crop Diagnosis Report</router-link>
+            <router-link to="/disease-library" @click="closeMenus">Disease Library</router-link>
+            <router-link to="/tag-management" @click="closeMenus">Tag Management</router-link>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <button type="button" class="btn-pill-outline" @click="toggleConsultMenu">
+            Consultation
+          </button>
+          <div v-if="showConsultMenu" class="nav-dropdown-menu">
+            <router-link to="/consultations/pending" @click="closeMenus">Pending Requests</router-link>
+            <router-link to="/consultations/records" @click="closeMenus">Consultation Record</router-link>
+          </div>
+        </div>
+      </template>
+
+      <!-- NOTIFICATIONS -->
       <div v-if="authState.user" class="nav-dropdown">
         <button type="button" class="btn-pill-outline" @click="toggleNotifications">
           🔔<span v-if="unreadCount"> ({{ unreadCount }})</span>
@@ -72,6 +108,7 @@ import { getNotifications, markNotificationRead } from '../services/notification
 
 const router = useRouter();
 const showConsultMenu = ref(false);
+const showDiagnosisMenu = ref(false);
 const showNotifications = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
@@ -82,21 +119,45 @@ onMounted(() => {
   }
 });
 
-async function loadNotifications() {
-  const response = await getNotifications();
-  notifications.value = response.data;
-  unreadCount.value = notifications.value.filter((n) => !n.isRead).length;
+function toggleConsultMenu() {
+  showConsultMenu.value = !showConsultMenu.value;
+  showDiagnosisMenu.value = false;
+  showNotifications.value = false;
+}
+
+function toggleDiagnosisMenu() {
+  showDiagnosisMenu.value = !showDiagnosisMenu.value;
+  showConsultMenu.value = false;
+  showNotifications.value = false;
 }
 
 function toggleNotifications() {
   showNotifications.value = !showNotifications.value;
+  showConsultMenu.value = false;
+  showDiagnosisMenu.value = false;
   if (showNotifications.value) {
     loadNotifications();
   }
 }
 
-async function openNotification(notification) {
+function closeMenus() {
+  showConsultMenu.value = false;
+  showDiagnosisMenu.value = false;
   showNotifications.value = false;
+}
+
+async function loadNotifications() {
+  try {
+    const response = await getNotifications();
+    notifications.value = response.data;
+    unreadCount.value = notifications.value.filter((n) => !n.isRead).length;
+  } catch (err) {
+    console.error('Failed to load notifications', err);
+  }
+}
+
+async function openNotification(notification) {
+  closeMenus();
   if (!notification.isRead) {
     await markNotificationRead(notification._id);
   }

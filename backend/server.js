@@ -20,6 +20,7 @@ const weatherRoutes = require('./routes/weatherRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const farmingRecommendationRoutes = require('./routes/farmingRecommendationRoute');
 const notificationRoutes = require('./routes/notificationRoutes');
+const farmingExpertiseRoutes = require('./routes/farmingExpertiseRoutes');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/weather', weatherRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/farming-recommendation', farmingRecommendationRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/farming-expertise', farmingExpertiseRoutes);
 
 const PORT = process.env.PORT || 5000;
 
