@@ -21,8 +21,19 @@
           Diagnosis History
         </router-link>
 
-        <router-link to="/farm-records" class="btn-pill-outline">
+        <div class="w-100"></div>
+
+
+        <router-link to="/farm-records" class="btn-pill">
           Farm Records
+        </router-link>
+
+        <router-link to="/financial-analysis" class="btn-pill-outline"> 
+          Financial Analysis
+        </router-link>
+
+        <router-link to="/expense-management" class="btn-pill-outline">
+          Manage Expenses
         </router-link>
       </div>
 

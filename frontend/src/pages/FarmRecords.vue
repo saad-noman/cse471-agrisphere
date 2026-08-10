@@ -1,10 +1,10 @@
 <template>
   <div class="container py-4">
-    <h2 class="mb-4">My Crops</h2>
+    <h2 class="mb-4">My Fields</h2>
 
     <div class="card mb-4">
       <div class="card-body">
-        <h5>Add Crop</h5>
+        <h5>Add Field</h5>
 
         <form @submit.prevent="createCrop">
 
@@ -103,7 +103,7 @@
           </div>
 
           <button class="btn btn-success mt-3">
-            Add Crop
+            Add Field
           </button>
 
         </form>
@@ -145,7 +145,8 @@
             </router-link>
 
             <button
-              class="btn btn-danger btn-sm"
+              class="btn btn-sm btn-outline-danger"
+
               @click="deleteCrop(crop._id)"
             >
               Delete

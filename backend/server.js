@@ -27,6 +27,7 @@ const fertilizerRoutes = require('./routes/fertilizerRoutes');
 const fertilizerRecordRoutes = require('./routes/fertilizerRecordRoutes');
 const pesticideRoutes = require('./routes/pesticideRoutes');
 const pesticideRecordRoutes = require('./routes/pesticideRecordRoutes');
+const financialAnalysisRoutes = require('./routes/financialAnalysisRoutes');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/fertilizers', fertilizerRoutes);
 app.use('/api/fertilizer-records', fertilizerRecordRoutes);
 app.use('/api/pesticides', pesticideRoutes);
 app.use('/api/pesticide-records', pesticideRecordRoutes);
+app.use('/api/financial-analysis', financialAnalysisRoutes);
 
 const PORT = process.env.PORT || 5000;
 

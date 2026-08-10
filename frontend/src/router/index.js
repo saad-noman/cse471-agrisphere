@@ -32,6 +32,8 @@ import ProvideCropDiagnosisReport from '../pages/ProvideCropDiagnosisReport.vue'
 import RequestFarmingExpertise from '../pages/RequestFarmingExpertise.vue';
 import ProvideFarmingExpertise from '../pages/ProvideFarmingExpertise.vue';
 import CropDetails from '../pages/CropDetails.vue';
+import FinancialAnalysis from '../pages/FinancialAnalysis.vue';
+import ExpenseManagement from '../pages/ExpenseManagement.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
@@ -66,6 +68,8 @@ const routes = [
   { path: '/timeline', name: 'Timeline', component: Timeline },
   { path: '/farming-recommendation', name: 'FarmingRecommendation', component: FarmingRecommendation },
   { path: '/farm-records/:id', name: 'CropDetails', component: CropDetails },
+  { path: '/financial-analysis', name: 'FinancialAnalysis', component: FinancialAnalysis, meta: { requiresAuth: true, role: 'farmer' } },
+  { path: '/expense-management', name: 'ExpenseManagement', component: ExpenseManagement, meta: { requiresAuth: true, role: 'farmer' } },
 ];
 
 const router = createRouter({

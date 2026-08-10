@@ -271,7 +271,8 @@
       </button>
 
       <button
-        class="btn btn-danger btn-sm"
+        class="btn btn-sm btn-outline-danger"
+
         @click="deleteItem(item._id)"
       >
         Delete
