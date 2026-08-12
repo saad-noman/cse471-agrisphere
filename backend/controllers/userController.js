@@ -56,6 +56,8 @@ const updateProfile = async (req, res) => {
         consultationMode,
         address,
         availabilityStatus,
+        latitude,
+        longitude,
       } = req.body;
 
       expert = await Expert.findOneAndUpdate(
@@ -78,6 +80,8 @@ const updateProfile = async (req, res) => {
           consultationMode,
           address,
           availabilityStatus,
+          latitude,
+          longitude,
         },
         { new: true, upsert: true }
       );

@@ -162,6 +162,20 @@
               <option value="unavailable">Unavailable</option>
             </select>
           </div>
+
+          <div class="mb-3">
+            <label class="form-label">Latitude</label>
+            <input v-model.number="latitude" type="number" step="any" class="form-control" placeholder="e.g. 23.8103" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Longitude</label>
+            <input v-model.number="longitude" type="number" step="any" class="form-control" placeholder="e.g. 90.4125" />
+            <p class="auth-switch" style="text-align: left; margin-top: 4px">
+              Sets your location on the map. Find your coordinates on
+              <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a>.
+            </p>
+          </div>
         </template>
 
         <button type="submit" class="btn-pill" :disabled="loading">
@@ -227,6 +241,8 @@ const organizationResults = ref([]);
 const consultationMode = ref('both');
 const address = ref('');
 const availabilityStatus = ref('available');
+const latitude = ref(null);
+const longitude = ref(null);
 
 const loading = ref(false);
 const error = ref('');
@@ -258,6 +274,8 @@ onMounted(async () => {
       consultationMode.value = expert.consultationMode || 'both';
       address.value = expert.address || '';
       availabilityStatus.value = expert.availabilityStatus || 'available';
+      latitude.value = expert.latitude ?? null;
+      longitude.value = expert.longitude ?? null;
     }
   } catch (err) {
     error.value = 'Could not load your profile. Please try again.';
@@ -355,6 +373,8 @@ async function handleSubmit() {
       consultationMode: consultationMode.value,
       address: address.value,
       availabilityStatus: availabilityStatus.value,
+      latitude: latitude.value,
+      longitude: longitude.value,
     });
 
     setUser(response.data.user);

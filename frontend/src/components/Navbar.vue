@@ -9,6 +9,7 @@
       <router-link to="/get-weather" class="btn-pill-outline">Weather</router-link>
       <router-link to="/experts" class="btn-pill-outline">Experts</router-link>
       <router-link to="/organizations" class="btn-pill-outline">Organizations</router-link>
+      <router-link to="/map" class="btn-pill-outline">Map</router-link>
 
       <!-- FARMER NAVIGATION -->
       <template v-if="authState.user?.role === 'farmer'">
