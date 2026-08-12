@@ -8,6 +8,7 @@
       <router-link to="/" class="btn-pill-outline">Home</router-link>
       <router-link to="/experts" class="btn-pill-outline">Experts</router-link>
       <router-link to="/organizations" class="btn-pill-outline">Organizations</router-link>
+      <router-link to="/map" class="btn-pill-outline">Map</router-link>
 
       <div v-if="authState.user?.role === 'farmer'" class="nav-dropdown">
         <button type="button" class="btn-pill-outline" @click="showConsultMenu = !showConsultMenu">

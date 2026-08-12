@@ -52,6 +52,20 @@
         </div>
 
         <div class="mb-3">
+          <label class="form-label">Latitude</label>
+          <input v-model.number="form.latitude" type="number" step="any" class="form-control" placeholder="e.g. 23.8103" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Longitude</label>
+          <input v-model.number="form.longitude" type="number" step="any" class="form-control" placeholder="e.g. 90.4125" />
+          <p class="auth-switch" style="text-align: left; margin-top: 4px">
+            Sets this organization's location on the map. Find coordinates on
+            <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a>.
+          </p>
+        </div>
+
+        <div class="mb-3">
           <label class="form-label">Contact Number</label>
           <input v-model="form.contactNumber" type="text" class="form-control" />
         </div>
@@ -109,6 +123,8 @@ const form = ref({
   address: '',
   district: '',
   upazila: '',
+  latitude: null,
+  longitude: null,
   contactNumber: '',
   email: '',
   website: '',
@@ -131,6 +147,8 @@ onMounted(async () => {
   form.value.address = org.address || '';
   form.value.district = org.district || '';
   form.value.upazila = org.upazila || '';
+  form.value.latitude = org.latitude ?? null;
+  form.value.longitude = org.longitude ?? null;
   form.value.contactNumber = org.contactNumber || '';
   form.value.email = org.email || '';
   form.value.website = org.website || '';
