@@ -4,7 +4,7 @@
 
     <div class="auth-card mb-4" style="max-width: 600px">
       <form @submit.prevent="handleSubmit">
-        <div class="mb-3">
+        <div ref="expertFieldRef" class="mb-3">
           <label class="form-label">Expert</label>
           <input
             v-model="expertSearch"
@@ -97,10 +97,15 @@
 import { ref, onMounted } from 'vue';
 import { searchExperts } from '../services/expertService';
 import { createConsultationRequest, getMyRequests } from '../services/consultationService';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const expertSearch = ref('');
 const expertResults = ref([]);
 const selectedExpert = ref(null);
+const expertFieldRef = ref(null);
+useClickOutside(expertFieldRef, () => {
+  expertResults.value = [];
+});
 
 const emptyForm = () => ({
   title: '',

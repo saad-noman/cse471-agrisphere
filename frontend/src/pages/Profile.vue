@@ -116,7 +116,7 @@
             <input v-model.number="experience" type="number" min="0" class="form-control" />
           </div>
 
-          <div class="mb-3">
+          <div ref="organizationFieldRef" class="mb-3">
             <label class="form-label">Organization</label>
             <input
               v-model="organization"
@@ -207,9 +207,14 @@ import {
   deleteProfile,
 } from '../services/profileService';
 import { searchOrganizations } from '../services/organizationService';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const router = useRouter();
 const deleteError = ref('');
+const organizationFieldRef = ref(null);
+useClickOutside(organizationFieldRef, () => {
+  organizationResults.value = [];
+});
 
 // The backend returns profileImage as "/uploads/xxx.jpg" — the API base URL
 // includes "/api", so that part is stripped to get the plain server URL.

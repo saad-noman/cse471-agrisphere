@@ -10,27 +10,23 @@
       <router-link to="/organizations" class="btn-pill-outline">Organizations</router-link>
       <router-link to="/map" class="btn-pill-outline">Map</router-link>
 
-      <div v-if="authState.user?.role === 'farmer'" class="nav-dropdown">
+      <div v-if="authState.user?.role === 'farmer' || authState.user?.role === 'expert'" ref="consultMenuRef" class="nav-dropdown">
         <button type="button" class="btn-pill-outline" @click="showConsultMenu = !showConsultMenu">
           Consultation
         </button>
         <div v-if="showConsultMenu" class="nav-dropdown-menu">
-          <router-link to="/consultations/request" @click="showConsultMenu = false">Request Consultation</router-link>
-          <router-link to="/consultations" @click="showConsultMenu = false">My Consultations</router-link>
+          <template v-if="authState.user?.role === 'farmer'">
+            <router-link to="/consultations/request" @click="showConsultMenu = false">Request Consultation</router-link>
+            <router-link to="/consultations" @click="showConsultMenu = false">My Consultations</router-link>
+          </template>
+          <template v-else>
+            <router-link to="/consultations/pending" @click="showConsultMenu = false">Pending Requests</router-link>
+            <router-link to="/consultations/records" @click="showConsultMenu = false">Consultation Record</router-link>
+          </template>
         </div>
       </div>
 
-      <div v-if="authState.user?.role === 'expert'" class="nav-dropdown">
-        <button type="button" class="btn-pill-outline" @click="showConsultMenu = !showConsultMenu">
-          Consultation
-        </button>
-        <div v-if="showConsultMenu" class="nav-dropdown-menu">
-          <router-link to="/consultations/pending" @click="showConsultMenu = false">Pending Requests</router-link>
-          <router-link to="/consultations/records" @click="showConsultMenu = false">Consultation Record</router-link>
-        </div>
-      </div>
-
-      <div v-if="authState.user" class="nav-dropdown">
+      <div v-if="authState.user" ref="notifMenuRef" class="nav-dropdown">
         <button type="button" class="btn-pill-outline" @click="toggleNotifications">
           🔔<span v-if="unreadCount"> ({{ unreadCount }})</span>
         </button>
@@ -66,12 +62,22 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { authState, logout } from '../stores/auth';
 import { getNotifications, markNotificationRead } from '../services/notificationService';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const router = useRouter();
 const showConsultMenu = ref(false);
 const showNotifications = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
+const consultMenuRef = ref(null);
+const notifMenuRef = ref(null);
+
+useClickOutside(consultMenuRef, () => {
+  showConsultMenu.value = false;
+});
+useClickOutside(notifMenuRef, () => {
+  showNotifications.value = false;
+});
 
 onMounted(() => {
   if (authState.user) {
