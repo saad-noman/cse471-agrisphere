@@ -2,53 +2,66 @@
   <div class="map-page">
     <h2 class="mb-3 px-3 pt-3">Agricultural Services Map</h2>
 
-    <form class="row g-2 px-3 mb-2" @submit.prevent="loadLocations">
-      <div class="col-md-3">
-        <input v-model="filters.search" type="text" class="form-control" placeholder="Search by name" />
-      </div>
-      <div class="col-md-2">
-        <input v-model="filters.district" type="text" class="form-control" placeholder="District" />
-      </div>
-      <div class="col-md-2">
-        <input v-model="filters.upazila" type="text" class="form-control" placeholder="Upazila" />
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn-pill w-100">Search</button>
-      </div>
-      <div class="col-md-3">
-        <button type="button" class="btn-pill-outline w-100" @click="findNearby">
+    <div class="map-page-layout">
+      <aside class="map-sidebar">
+        <div ref="filterMenuRef" class="mb-3">
+          <button type="button" class="btn-pill-outline w-100" @click="showFilters = !showFilters">
+            Filters {{ showFilters ? '▲' : '▼' }}
+          </button>
+          <div v-if="showFilters" class="map-filter-panel">
+            <label class="form-label mb-1">Search by name</label>
+            <input v-model="filters.search" type="text" class="form-control mb-2" placeholder="Search by name" />
+
+            <label class="form-label mb-1">District</label>
+            <input v-model="filters.district" type="text" class="form-control mb-2" placeholder="District" />
+
+            <label class="form-label mb-1">Upazila</label>
+            <input v-model="filters.upazila" type="text" class="form-control mb-2" placeholder="Upazila" />
+
+            <div class="d-flex gap-2 mt-2">
+              <button type="button" class="btn-pill flex-fill" @click="showFilters = false">Apply</button>
+              <button type="button" class="btn btn-outline-secondary flex-fill" @click="clearFilters">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-pill-outline w-100 mb-3" @click="findNearby">
           Show Nearby (My Location)
         </button>
+
+        <div class="map-legend">
+          <p class="form-label mb-2">Show on map</p>
+          <label class="d-flex align-items-center gap-2 mb-2">
+            <input type="checkbox" v-model="showExperts" @change="renderMarkers" />
+            <span class="map-legend-dot" style="background: #2f6b3a"></span> Experts
+          </label>
+          <label class="d-flex align-items-center gap-2 mb-2">
+            <input type="checkbox" v-model="showOrganizations" @change="renderMarkers" />
+            <span class="map-legend-dot" style="background: #d9b64c"></span> Organizations / Services
+          </label>
+          <label class="d-flex align-items-center gap-2 mb-2">
+            <input type="checkbox" v-model="showConsultationCenters" @change="renderMarkers" />
+            <span class="map-legend-dot" style="background: #c0392b"></span> Consultation Centers
+          </label>
+        </div>
+
+        <p v-if="nearbyError" class="error-text">{{ nearbyError }}</p>
+      </aside>
+
+      <div class="map-main">
+        <div ref="mapContainer" class="leaflet-map"></div>
       </div>
-    </form>
-
-    <div class="px-3 mb-2 d-flex gap-3 flex-wrap align-items-center">
-      <label class="d-flex align-items-center gap-1">
-        <span class="map-legend-dot" style="background: #2f6b3a"></span>
-        <input type="checkbox" v-model="showExperts" @change="renderMarkers" /> Experts
-      </label>
-      <label class="d-flex align-items-center gap-1">
-        <span class="map-legend-dot" style="background: #d9b64c"></span>
-        <input type="checkbox" v-model="showOrganizations" @change="renderMarkers" /> Organizations / Services
-      </label>
-      <label class="d-flex align-items-center gap-1">
-        <span class="map-legend-dot" style="background: #c0392b"></span>
-        <input type="checkbox" v-model="showConsultationCenters" @change="renderMarkers" /> Consultation Centers
-      </label>
     </div>
-
-    <p v-if="nearbyError" class="error-text px-3">{{ nearbyError }}</p>
-
-    <div ref="mapContainer" class="leaflet-map"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { searchExperts } from '../services/expertService';
 import { searchOrganizations } from '../services/organizationService';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const mapContainer = ref(null);
 let map = null;
@@ -56,6 +69,12 @@ let expertLayer = null;
 let orgLayer = null;
 let consultLayer = null;
 let userMarker = null;
+
+const showFilters = ref(false);
+const filterMenuRef = ref(null);
+useClickOutside(filterMenuRef, () => {
+  showFilters.value = false;
+});
 
 const filters = ref({ search: '', district: '', upazila: '' });
 const showExperts = ref(true);
@@ -67,8 +86,11 @@ const defaultLat = Number(import.meta.env.VITE_MAP_DEFAULT_LAT) || 23.8103;
 const defaultLng = Number(import.meta.env.VITE_MAP_DEFAULT_LNG) || 90.4125;
 const defaultZoom = Number(import.meta.env.VITE_MAP_DEFAULT_ZOOM) || 7;
 
-let experts = [];
-let organizations = [];
+// The full, unfiltered dataset — fetched once. Filters only ever change what
+// is rendered from this list, they never discard data, so clearing a filter
+// always brings everything back without a fresh request.
+let allExperts = [];
+let allOrganizations = [];
 
 onMounted(async () => {
   map = L.map(mapContainer.value).setView([defaultLat, defaultLng], defaultZoom);
@@ -81,21 +103,34 @@ onMounted(async () => {
   orgLayer = L.layerGroup().addTo(map);
   consultLayer = L.layerGroup().addTo(map);
 
-  await loadLocations();
+  // The map fills its container via CSS; make sure Leaflet re-measures it
+  // whenever the window is resized (e.g. rotating a phone).
+  window.addEventListener('resize', handleWindowResize);
+
+  const expertResponse = await searchExperts();
+  allExperts = expertResponse.data;
+
+  const orgResponse = await searchOrganizations();
+  allOrganizations = orgResponse.data;
+
+  renderMarkers();
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleWindowResize);
   if (map) map.remove();
 });
 
-async function loadLocations() {
-  const expertResponse = await searchExperts(filters.value);
-  experts = expertResponse.data;
+function handleWindowResize() {
+  if (map) map.invalidateSize();
+}
 
-  const orgResponse = await searchOrganizations(filters.value);
-  organizations = orgResponse.data;
+// Re-render whenever a filter changes, so results update as you type.
+watch(filters, renderMarkers, { deep: true });
 
-  renderMarkers();
+function clearFilters() {
+  filters.value = { search: '', district: '', upazila: '' };
+  showFilters.value = false;
 }
 
 // Opens OpenStreetMap's own directions panel for the given point — avoids
@@ -104,14 +139,30 @@ function directionsLink(lat, lng) {
   return `https://www.openstreetmap.org/directions?to=${lat}%2C${lng}`;
 }
 
+// A location matches if every filled-in filter matches that location's own
+// fields. Blank filters are ignored, so filtering one field never affects
+// locations that don't have (or don't need) a match on another field.
+function matchesFilters(location, nameField) {
+  const search = filters.value.search.trim().toLowerCase();
+  const district = filters.value.district.trim().toLowerCase();
+  const upazila = filters.value.upazila.trim().toLowerCase();
+
+  if (search && !location[nameField]?.toLowerCase().includes(search)) return false;
+  if (district && !location.district?.toLowerCase().includes(district)) return false;
+  if (upazila && !location.upazila?.toLowerCase().includes(upazila)) return false;
+
+  return true;
+}
+
 function renderMarkers() {
   expertLayer.clearLayers();
   orgLayer.clearLayers();
   consultLayer.clearLayers();
 
   if (showExperts.value) {
-    experts
+    allExperts
       .filter((expert) => expert.latitude != null && expert.longitude != null)
+      .filter((expert) => matchesFilters(expert, 'fullName'))
       .forEach((expert) => {
         const marker = L.circleMarker([expert.latitude, expert.longitude], {
           radius: 8,
@@ -129,8 +180,9 @@ function renderMarkers() {
       });
   }
 
-  organizations
+  allOrganizations
     .filter((org) => org.latitude != null && org.longitude != null)
+    .filter((org) => matchesFilters(org, 'name'))
     .forEach((org) => {
       const isConsultationCenter = org.isConsultationCenter;
       if (isConsultationCenter && !showConsultationCenters.value) return;

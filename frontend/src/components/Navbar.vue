@@ -17,7 +17,8 @@
           Farming Expertise
         </router-link>
 
-        <div class="nav-dropdown">
+        <!-- Diagnosis Dropdown -->
+        <div ref="diagnosisMenuRef" class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
             Diagnosis
           </button>
@@ -27,7 +28,8 @@
           </div>
         </div>
 
-        <div class="nav-dropdown">
+        <!-- Consultation Dropdown -->
+        <div ref="consultMenuRef" class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleConsultMenu">
             Consultation
           </button>
@@ -44,7 +46,8 @@
           Farming Expertise
         </router-link>
 
-        <div class="nav-dropdown">
+        <!-- Diagnosis Dropdown -->
+        <div ref="diagnosisMenuRef" class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleDiagnosisMenu">
             Diagnosis
           </button>
@@ -55,7 +58,8 @@
           </div>
         </div>
 
-        <div class="nav-dropdown">
+        <!-- Consultation Dropdown -->
+        <div ref="consultMenuRef" class="nav-dropdown">
           <button type="button" class="btn-pill-outline" @click="toggleConsultMenu">
             Consultation
           </button>
@@ -67,7 +71,7 @@
       </template>
 
       <!-- NOTIFICATIONS -->
-      <div v-if="authState.user" class="nav-dropdown">
+      <div v-if="authState.user" ref="notifMenuRef" class="nav-dropdown">
         <button type="button" class="btn-pill-outline" @click="toggleNotifications">
           🔔<span v-if="unreadCount"> ({{ unreadCount }})</span>
         </button>
@@ -106,6 +110,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { authState, logout } from '../stores/auth';
 import { getNotifications, markNotificationRead } from '../services/notificationService';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const router = useRouter();
 const showConsultMenu = ref(false);
@@ -113,6 +118,19 @@ const showDiagnosisMenu = ref(false);
 const showNotifications = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
+const consultMenuRef = ref(null);
+const diagnosisMenuRef = ref(null);
+const notifMenuRef = ref(null);
+
+useClickOutside(consultMenuRef, () => {
+  showConsultMenu.value = false;
+});
+useClickOutside(diagnosisMenuRef, () => {
+  showDiagnosisMenu.value = false;
+});
+useClickOutside(notifMenuRef, () => {
+  showNotifications.value = false;
+});
 
 onMounted(() => {
   if (authState.user) {

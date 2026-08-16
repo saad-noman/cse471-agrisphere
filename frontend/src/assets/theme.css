@@ -67,8 +67,10 @@ body {
 
 .nav-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .nav-user {
@@ -96,7 +98,8 @@ body {
   flex-direction: column;
   gap: 2px;
   min-width: 220px;
-  z-index: 20;
+  max-width: calc(100vw - 32px);
+  z-index: 1000;
 }
 
 .nav-dropdown-menu a {
@@ -111,6 +114,17 @@ body {
 .nav-dropdown-menu a:hover {
   background: var(--bg);
   color: var(--green);
+}
+
+/* Filter dropdown panels (Experts, Organizations, Knowledge Resources, Map) */
+.filter-menu {
+  min-width: 260px;
+  max-width: calc(100vw - 32px);
+}
+
+.filter-menu .form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* Buttons */
@@ -225,12 +239,48 @@ body {
   color: var(--green);
 }
 
-/* Map page */
-.leaflet-map {
-  height: 65vh;
+/* Map page — left sidebar (filters + legend) and map filling the rest of the viewport */
+.map-page-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 0 16px 16px;
+  height: calc(100vh - 180px);
   min-height: 420px;
+}
+
+.map-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: #fff;
   border-radius: 16px;
-  margin: 0 16px 16px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+}
+
+.map-filter-panel {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.map-legend {
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.map-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .map-legend-dot {
@@ -892,4 +942,53 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+  .navbar-agri {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 20px;
+    padding: 14px;
+  }
 
+  .navbar-agri .logo {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .nav-links {
+    justify-content: center;
+  }
+
+  /* The organization sidebar becomes a normal row above the page content
+     instead of a fixed column, so it doesn't eat up screen width. */
+  .org-sidebar {
+    position: static;
+    flex-direction: row;
+    width: auto;
+    height: auto;
+    padding: 12px;
+    margin: 0 16px 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .org-content-with-sidebar {
+    margin-left: 0;
+  }
+
+  /* Map page: sidebar and map stack instead of sitting side by side. */
+  .map-page-layout {
+    flex-direction: column;
+    height: auto;
+    padding: 0 8px 16px;
+  }
+
+  .map-sidebar {
+    width: auto;
+  }
+
+  .leaflet-map {
+    height: 55vh;
+    min-height: 320px;
+  }
+}

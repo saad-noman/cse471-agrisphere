@@ -5,23 +5,29 @@
     <div class="container py-4" :class="{ 'org-content-with-sidebar': authState.user?.role === 'organization_owner' }">
       <h2 class="mb-4">Agricultural Organizations</h2>
 
-      <form class="row g-2 mb-4" @submit.prevent="loadOrganizations">
-        <div class="col-md-3">
-          <input v-model="filters.search" type="text" class="form-control" placeholder="Search by name" />
+      <div ref="filterMenuRef" class="nav-dropdown mb-4">
+        <button type="button" class="btn-pill-outline" @click="showFilters = !showFilters">Filters &#9662;</button>
+        <div v-if="showFilters" class="nav-dropdown-menu filter-menu">
+          <form @submit.prevent="handleSearch">
+            <label class="form-label mb-1">Search by name</label>
+            <input v-model="filters.search" type="text" class="form-control mb-2" placeholder="Search by name" />
+
+            <label class="form-label mb-1">Category</label>
+            <input v-model="filters.category" type="text" class="form-control mb-2" placeholder="Category" />
+
+            <label class="form-label mb-1">District</label>
+            <input v-model="filters.district" type="text" class="form-control mb-2" placeholder="District" />
+
+            <label class="form-label mb-1">Upazila</label>
+            <input v-model="filters.upazila" type="text" class="form-control mb-2" placeholder="Upazila" />
+
+            <div class="d-flex gap-2 mt-2">
+              <button type="submit" class="btn-pill">Search</button>
+              <button type="button" class="btn btn-outline-secondary" @click="clearFilters">Clear Filters</button>
+            </div>
+          </form>
         </div>
-        <div class="col-md-3">
-          <input v-model="filters.category" type="text" class="form-control" placeholder="Category" />
-        </div>
-        <div class="col-md-2">
-          <input v-model="filters.district" type="text" class="form-control" placeholder="District" />
-        </div>
-        <div class="col-md-2">
-          <input v-model="filters.upazila" type="text" class="form-control" placeholder="Upazila" />
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn-pill w-100">Search</button>
-        </div>
-      </form>
+      </div>
 
       <p v-if="organizations.length === 0">No organizations have been added yet.</p>
       <ul class="list-group">
@@ -43,14 +49,31 @@ import { authState } from '../stores/auth';
 import { serverUrl } from '../services/api';
 import { searchOrganizations } from '../services/organizationService';
 import OrganizationSidebar from '../components/OrganizationSidebar.vue';
+import { useClickOutside } from '../composables/useClickOutside';
 
 const organizations = ref([]);
 const filters = ref({ search: '', category: '', district: '', upazila: '' });
+const showFilters = ref(false);
+const filterMenuRef = ref(null);
+useClickOutside(filterMenuRef, () => {
+  showFilters.value = false;
+});
 
 onMounted(loadOrganizations);
 
 async function loadOrganizations() {
   const response = await searchOrganizations(filters.value);
   organizations.value = response.data;
+}
+
+function handleSearch() {
+  showFilters.value = false;
+  loadOrganizations();
+}
+
+function clearFilters() {
+  filters.value = { search: '', category: '', district: '', upazila: '' };
+  showFilters.value = false;
+  loadOrganizations();
 }
 </script>
