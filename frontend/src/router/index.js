@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../pages/Home.vue';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
-import Dashboard from '../pages/Dashboard.vue';
 import Profile from '../pages/Profile.vue';
 import ExpertSearch from '../pages/ExpertSearch.vue';
 import ExpertProfile from '../pages/ExpertProfile.vue';
@@ -35,11 +34,11 @@ import CropDetails from '../pages/CropDetails.vue';
 import FinancialAnalysis from '../pages/FinancialAnalysis.vue';
 import ExpenseManagement from '../pages/ExpenseManagement.vue';
 import SeasonalPerformance from '../pages/SeasonalPerformance.vue';
+import Dashboard from '../pages/Dashboard.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/profile', name: 'Profile', component: Profile },
   { path: '/experts', name: 'ExpertSearch', component: ExpertSearch },
   { path: '/experts/:id', name: 'ExpertProfile', component: ExpertProfile },
@@ -72,6 +71,7 @@ const routes = [
   { path: '/financial-analysis', name: 'FinancialAnalysis', component: FinancialAnalysis, meta: { requiresAuth: true, role: 'farmer' } },
   { path: '/expense-management', name: 'ExpenseManagement', component: ExpenseManagement, meta: { requiresAuth: true, role: 'farmer' } },
   { path: '/seasonal-performance', name: 'SeasonalPerformance', component: SeasonalPerformance, meta: { requiresAuth: true, role: 'farmer' } },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, role: 'farmer' } },
 ];
 
 const router = createRouter({
