@@ -17,7 +17,6 @@ const farmRecordRoutes = require('./routes/farmRecordRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const mapRoutes = require('./routes/mapRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const cropRoutes = require('./routes/cropRoutes');
 const productionRoutes = require('./routes/productionRoutes');
@@ -27,6 +26,7 @@ const pesticideRoutes = require('./routes/pesticideRoutes');
 const pesticideRecordRoutes = require('./routes/pesticideRecordRoutes');
 const financialAnalysisRoutes = require('./routes/financialAnalysisRoutes');
 const farmRoutes = require('./routes/farmRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 
@@ -50,7 +50,6 @@ app.use('/api/farm-records', farmRecordRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/map', mapRoutes);
 app.use('/api/weather', weatherRoutes);
-app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/crops', cropRoutes);
 app.use('/api/production', productionRoutes);
@@ -60,6 +59,7 @@ app.use('/api/pesticides', pesticideRoutes);
 app.use('/api/pesticide-records', pesticideRecordRoutes);
 app.use('/api/financial-analysis', financialAnalysisRoutes);
 app.use('/api/farms', farmRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 5000;
 

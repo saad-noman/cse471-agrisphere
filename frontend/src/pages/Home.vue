@@ -16,6 +16,10 @@
           Diagnosis History
         </router-link>
 
+        <router-link to="/dashboard" class="btn-pill-outline">
+          Dashboard
+        </router-link>
+
         <div class="w-100"></div>
 
 

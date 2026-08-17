@@ -1,6 +1,16 @@
 const express = require('express');
+
 const router = express.Router();
 
-// TODO: dashboard, analytics, timeline & farming history routes
+const {
+  getDashboard,
+} = require('../controllers/dashboardController');
+
+const { protect } = require('../middleware/authMiddleware');
+
+
+// GET /api/dashboard
+router.get('/', protect, getDashboard);
+
 
 module.exports = router;
