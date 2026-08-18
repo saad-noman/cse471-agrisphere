@@ -3,10 +3,10 @@
     <!-- Header & Headline -->
     <header class="weather-header">
       <div class="header-content">
-        <span class="badge">Live Meteorological Data</span>
-        <h1>🌦️ Local Weather & Farming Forecast</h1>
+        
+        <h1>Live Meteorological Data</h1>
         <p class="subtitle">
-          Real-time weather insights, precipitation probability, and 7-day agricultural forecasts powered by Open-Meteo.
+          Real-time weather insights, precipitation, soil moisture, and agricultural forecasts powered by Open-Meteo.
         </p>
       </div>
 
@@ -26,7 +26,7 @@
               class="search-input"
             />
             <button type="submit" class="btn-search" :disabled="loading || !searchQuery.trim()">
-              🔍 Search
+              Search
             </button>
           </div>
         </form>
@@ -60,7 +60,7 @@
 
     <!-- Main Content Grid (Left: Current, Right: Forecast) -->
     <div v-if="currentWeather && !loading" class="weather-main-grid">
-      <!-- LEFT SIDE: CURRENT WEATHER -->
+      <!-- LEFT SIDE: CURRENT WEATHER (Matching Farming Recommendation Parameters) -->
       <section class="current-weather-card">
         <div class="card-header">
           <h2>Current Conditions</h2>
@@ -83,7 +83,7 @@
           Feels like {{ Math.round(currentWeather.apparent_temperature ?? currentWeather.temperature_2m) }}°C
         </div>
 
-        <!-- 4 Core Required Metrics Grid -->
+        <!-- 4 Core Metrics Grid (Matching Farming Recommendation) -->
         <div class="metrics-grid">
           <div class="metric-card">
             <div class="metric-icon">🌡️</div>
@@ -104,24 +104,44 @@
           <div class="metric-card">
             <div class="metric-icon">🌧️</div>
             <div class="metric-info">
-              <span class="metric-label">Rain Probability</span>
-              <span class="metric-val">{{ currentRainChance }} %</span>
+              <span class="metric-label">Rainfall</span>
+              <span class="metric-val">{{ currentRainfall }} mm</span>
             </div>
           </div>
 
           <div class="metric-card">
-            <div class="metric-icon">💨</div>
+            <div class="metric-icon">🌱</div>
             <div class="metric-info">
-              <span class="metric-label">Wind Speed</span>
-              <span class="metric-val">{{ currentWeather.wind_speed_10m }} km/h</span>
+              <span class="metric-label">Soil Moisture</span>
+              <span class="metric-val">{{ currentSoilMoisture }} %</span>
             </div>
           </div>
+        </div>
+
+        <!-- Additional Wind Info Pill -->
+        <div class="wind-info-pill">
+          💨 <strong>Wind Speed:</strong> {{ currentWeather.wind_speed_10m }} km/h
+          <span class="dot-sep">•</span>
+          🌧️ <strong>Rain Chance:</strong> {{ currentRainChance }}%
         </div>
 
         <!-- Agricultural Advice Note -->
         <div class="farming-tip-card">
           <h4>🌾 Farming Insight</h4>
-          <p>{{ getFarmingAdvice(currentWeather, currentRainChance) }}</p>
+          <p>{{ getFarmingAdvice(currentWeather, currentRainChance, currentSoilMoisture) }}</p>
+        </div>
+
+        <!-- Predict Crop Based on Weather CTA Box -->
+        <div class="predict-cta-box">
+          <div class="cta-text-wrap">
+            <span class="cta-title">Predict Crop Using Live Weather</span>
+            <p class="cta-desc">
+              Load these 4 weather parameters into the Crop Recommendation page.
+            </p>
+          </div>
+          <button type="button" class="btn-predict-cta" @click="goToCropPrediction">
+            Load Data & Predict Crop 
+          </button>
         </div>
       </section>
 
@@ -141,46 +161,103 @@
               :class="['tab-btn', { active: activeTab === 'hourly' }]"
               @click="activeTab = 'hourly'"
             >
-              ⏱️ 24-Hour Trend
+              ⏱️ 24-Hour Tables
             </button>
           </div>
         </div>
 
-        <!-- TAB 1: 7-DAY FORECAST -->
-        <div v-if="activeTab === 'daily' && dailyForecast.length" class="daily-forecast-list">
-          <div v-for="day in dailyForecast" :key="day.date" class="daily-card">
-            <div class="day-col">
-              <span class="day-name">{{ formatDayName(day.date) }}</span>
-              <span class="day-date">{{ formatDateShort(day.date) }}</span>
-            </div>
+        <!-- TAB 1: 7-DAY FORECAST (SINGLE COLUMN) -->
+        <div v-if="activeTab === 'daily' && dailyForecast.length" class="daily-forecast-wrap">
+          <p class="hourly-subtitle">7-Day Agricultural Weather Forecast</p>
+          <div class="daily-single-column">
+            <div v-for="day in dailyForecast" :key="day.date" class="daily-card">
+              <div class="day-col">
+                <span class="day-name">{{ formatDayName(day.date) }}</span>
+                <span class="day-date">{{ formatDateShort(day.date) }}</span>
+              </div>
 
-            <div class="icon-col">
-              <span class="weather-icon-sm">{{ getWeatherIcon(day.weather_code) }}</span>
-              <span class="weather-desc-sm">{{ getWeatherDescription(day.weather_code) }}</span>
-            </div>
+              <div class="icon-col">
+                <span class="weather-icon-sm">{{ getWeatherIcon(day.weather_code) }}</span>
+                <span class="weather-desc-sm">{{ getWeatherDescription(day.weather_code) }}</span>
+              </div>
 
-            <div class="rain-col">
-              <span class="rain-badge">💧 {{ day.rain_prob }}% rain</span>
-            </div>
+              <div class="rain-col">
+                <span class="rain-badge">💧 {{ day.rain_prob }}% rain</span>
+              </div>
 
-            <div class="temp-col">
-              <span class="temp-max">{{ Math.round(day.temp_max) }}°</span>
-              <span class="temp-divider">/</span>
-              <span class="temp-min">{{ Math.round(day.temp_min) }}°C</span>
+              <div class="temp-col">
+                <span class="temp-max">{{ Math.round(day.temp_max) }}°</span>
+                <span class="temp-divider">/</span>
+                <span class="temp-min">{{ Math.round(day.temp_min) }}°C</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB 2: 24-HOUR HOURLY SCROLL -->
-        <div v-if="activeTab === 'hourly' && hourlyForecast.length" class="hourly-forecast-wrap">
-          <p class="hourly-subtitle">Next 24 hours precipitation chance & temperature</p>
-          <div class="hourly-scroll-container">
-            <div v-for="item in hourlyForecast" :key="item.time" class="hourly-card">
-              <span class="hour-label">{{ item.hourLabel }}</span>
-              <span class="hour-icon">{{ getWeatherIcon(item.weather_code) }}</span>
-              <span class="hour-temp">{{ Math.round(item.temp) }}°C</span>
-              <div class="hour-rain-pill" :style="{ opacity: item.rain_prob > 0 ? 1 : 0.4 }">
-                💧 {{ item.rain_prob }}%
+        <!-- TAB 2: 24-HOUR HOURLY TABLES (12 & 12 COLUMNS) -->
+        <div v-if="activeTab === 'hourly' && (hourlyCol1.length || hourlyCol2.length)" class="hourly-forecast-tables-wrap">
+          <p class="hourly-subtitle">Next 24 Hours Detailed Forecast </p>
+          
+          <div class="hourly-tables-grid">
+            <!-- COLUMN 1: FIRST 12 HOURS -->
+            <div class="table-column">
+              <div class="column-header-title">Hours 1 – 12</div>
+              <div class="table-responsive">
+                <table class="weather-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Condition</th>
+                      <th>Temp</th>
+                      <th>Rain %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in hourlyCol1" :key="item.time">
+                      <td class="time-cell">{{ item.hourLabel }}</td>
+                      <td class="condition-cell">
+                        <span class="table-icon">{{ getWeatherIcon(item.weather_code) }}</span>
+                      </td>
+                      <td class="temp-cell">{{ Math.round(item.temp) }}°C</td>
+                      <td class="rain-cell">
+                        <span :class="['table-rain-badge', { 'high-rain': item.rain_prob > 50 }]">
+                          💧 {{ item.rain_prob }}%
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- COLUMN 2: NEXT 12 HOURS -->
+            <div class="table-column">
+              <div class="column-header-title">Hours 13 – 24</div>
+              <div class="table-responsive">
+                <table class="weather-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Condition</th>
+                      <th>Temp</th>
+                      <th>Rain %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in hourlyCol2" :key="item.time">
+                      <td class="time-cell">{{ item.hourLabel }}</td>
+                      <td class="condition-cell">
+                        <span class="table-icon">{{ getWeatherIcon(item.weather_code) }}</span>
+                      </td>
+                      <td class="temp-cell">{{ Math.round(item.temp) }}°C</td>
+                      <td class="rain-cell">
+                        <span :class="['table-rain-badge', { 'high-rain': item.rain_prob > 50 }]">
+                          💧 {{ item.rain_prob }}%
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -198,7 +275,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref('');
 const activeTab = ref('daily');
@@ -210,8 +289,26 @@ const locationName = ref('');
 
 const currentWeather = ref(null);
 const currentRainChance = ref(0);
+const currentRainfall = ref(0);
+const currentSoilMoisture = ref(0);
+
 const dailyForecast = ref([]);
-const hourlyForecast = ref([]);
+const hourlyCol1 = ref([]); // First 12 hours
+const hourlyCol2 = ref([]); // Next 12 hours
+
+function goToCropPrediction() {
+  if (!currentWeather.value) return;
+  router.push({
+    path: '/farming-recommendation',
+    query: {
+      fromWeather: 'true',
+      temperature: currentWeather.value.temperature_2m,
+      humidity: currentWeather.value.relative_humidity_2m,
+      rainfall: currentRainfall.value,
+      moisture: currentSoilMoisture.value,
+    },
+  });
+}
 
 onMounted(() => {
   getGeoLocation();
@@ -262,7 +359,7 @@ async function fetchWeatherByCoords(lat, lon, customName = '') {
   loading.value = true;
   errorMessage.value = '';
 
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,soil_moisture_0_to_1cm,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max&timezone=auto`;
 
   try {
     const res = await fetch(url);
@@ -271,12 +368,25 @@ async function fetchWeatherByCoords(lat, lon, customName = '') {
 
     currentWeather.value = data.current;
 
-    // Current hour rain probability
     const currentHourIdx = new Date().getHours();
+
+    // Current hour rain probability
     currentRainChance.value =
       data.hourly?.precipitation_probability?.[currentHourIdx] ??
       data.daily?.precipitation_probability_max?.[0] ??
       0;
+
+    // Current Rainfall in mm
+    const rainMm =
+      data.current?.precipitation ??
+      data.hourly?.precipitation?.[currentHourIdx] ??
+      data.daily?.precipitation_sum?.[0] ??
+      0;
+    currentRainfall.value = Number(rainMm).toFixed(1);
+
+    // Current Soil Moisture in % (soil_moisture_0_to_1cm is in m³/m³)
+    const smVal = data.hourly?.soil_moisture_0_to_1cm?.[currentHourIdx] ?? 0.35;
+    currentSoilMoisture.value = Math.round(smVal * 100);
 
     // Format 7-Day Daily Forecast
     if (data.daily) {
@@ -291,13 +401,13 @@ async function fetchWeatherByCoords(lat, lon, customName = '') {
       }));
     }
 
-    // Format Next 24 Hours Forecast
+    // Format Next 24 Hours Forecast into 2 columns (12 + 12 hours)
     if (data.hourly) {
       const times = data.hourly.time || [];
       const nowIdx = Math.max(0, currentHourIdx);
       const next24 = times.slice(nowIdx, nowIdx + 24);
 
-      hourlyForecast.value = next24.map((timeStr, idx) => {
+      const formatted = next24.map((timeStr, idx) => {
         const actualIdx = nowIdx + idx;
         const d = new Date(timeStr);
         const hourLabel = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -310,6 +420,9 @@ async function fetchWeatherByCoords(lat, lon, customName = '') {
           weather_code: data.hourly.weather_code[actualIdx],
         };
       });
+
+      hourlyCol1.value = formatted.slice(0, 12);
+      hourlyCol2.value = formatted.slice(12, 24);
     }
 
     if (customName) {
@@ -359,7 +472,7 @@ function selectCity(city) {
   fetchWeatherByCoords(coords.lat, coords.lon);
 }
 
-// Reverse Geocoding helper (Open-Meteo or BigDataCloud)
+// Reverse Geocoding helper
 async function reverseGeocode(lat, lon) {
   try {
     const res = await fetch(
@@ -418,9 +531,12 @@ function getWeatherDescription(code) {
   return descriptions[code] || 'Moderate Weather';
 }
 
-function getFarmingAdvice(current, rainProb) {
+function getFarmingAdvice(current, rainProb, soilMoisture) {
   if (rainProb > 60) {
     return 'High probability of rain today. Postpone pesticide application and heavy irrigation.';
+  }
+  if (soilMoisture < 25) {
+    return 'Low soil moisture level. Irrigation is recommended for optimal crop health.';
   }
   if (current.temperature_2m > 33) {
     return 'High temperatures detected. Ensure adequate soil moisture to protect crops from heat stress.';
@@ -446,46 +562,51 @@ function formatDateShort(dateStr) {
 
 <style scoped>
 .weather-page {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 1.5rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #1f2937;
+  color: #000000;
+  box-sizing: border-box;
 }
 
-/* Header & Controls */
+/* Header matching Farming Recommendation Page */
 .weather-header {
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  color: #000000;
   padding: 2rem;
   border-radius: 16px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
   position: relative;
+  box-sizing: border-box;
 }
 
 .badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(4px);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: #000000;
 }
 
 .weather-header h1 {
   margin: 0.75rem 0 0.5rem 0;
   font-size: 2.2rem;
   font-weight: 800;
+  color: #000000;
 }
 
 .subtitle {
-  color: #e0f2fe;
+  color: #000000;
   font-size: 1rem;
   margin: 0 0 1.5rem 0;
-  max-width: 700px;
+  max-width: 750px;
+  font-weight: 600;
 }
 
 .controls-bar {
@@ -497,24 +618,25 @@ function formatDateShort(dateStr) {
 
 .btn-location {
   background: #ffffff;
-  color: #0369a1;
+  color: #000000;
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
 .btn-location:hover {
-  background: #f0f9ff;
+  background: #f0fdf4;
   transform: translateY(-1px);
 }
 
 .search-form {
   flex: 1;
-  min-width: 280px;
+  min-width: 260px;
 }
 
 .search-input-wrap {
@@ -528,30 +650,33 @@ function formatDateShort(dateStr) {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.95);
-  color: #0f172a;
+  color: #000000;
   font-size: 0.95rem;
+  font-weight: 600;
   outline: none;
+  min-width: 0;
 }
 
 .btn-search {
-  background: #0f172a;
-  color: #ffffff;
+  background: #065f46;
+  color: #000000;
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .btn-search:hover:not(:disabled) {
-  background: #1e293b;
+  background: #044e39;
 }
 
 /* Search Dropdown */
 .search-results-dropdown {
   background: #ffffff;
-  color: #1e293b;
+  color: #000000;
   border-radius: 12px;
   margin-top: 0.5rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -567,56 +692,60 @@ function formatDateShort(dateStr) {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #000000;
 }
 
 .search-result-item:hover {
-  background: #f0f9ff;
+  background: #ecfdf5;
 }
 
 .city-subtext {
   font-size: 0.85rem;
-  color: #64748b;
+  color: #000000;
 }
 
 /* Banners */
 .error-banner {
   background: #fef2f2;
-  color: #dc2626;
+  color: #000000;
   border: 1px solid #fecaca;
   padding: 1rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .location-bar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  font-weight: 700;
-  color: #334155;
+  font-weight: 800;
+  color: #000000;
+  word-break: break-word;
 }
 
 .coords-tag {
-  color: #94a3b8;
-  font-weight: 500;
+  color: #000000;
+  font-weight: 700;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 /* Main Grid (Left: Current, Right: Forecast) */
 .weather-main-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 1.5rem;
   align-items: start;
+  color: #000000;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 950px) {
   .weather-main-grid {
     grid-template-columns: 1fr;
   }
@@ -624,11 +753,15 @@ function formatDateShort(dateStr) {
 
 /* Left Card: Current Weather */
 .current-weather-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #b4c0b9;
+  border: 1px solid #d1fae5;
   border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  padding: 1.25rem;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  color: #000000;
 }
 
 .card-header {
@@ -636,34 +769,41 @@ function formatDateShort(dateStr) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .card-header h2 {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #000000;
+  word-break: break-word;
 }
 
 .live-pill {
   background: #dcfce7;
-  color: #166534;
+  color: #000000;
   font-size: 0.7rem;
   font-weight: 800;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
+  border: 1px solid #bbf7d0;
+  white-space: nowrap;
 }
 
 .current-hero {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .weather-icon-lg {
-  font-size: 4rem;
+  font-size: 3.5rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .hero-temp {
@@ -672,104 +812,151 @@ function formatDateShort(dateStr) {
 }
 
 .temp-val {
-  font-size: 3.8rem;
+  font-size: 3.4rem;
   font-weight: 900;
   line-height: 1;
-  color: #0f172a;
+  color: #000000;
 }
 
 .temp-unit {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #64748b;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #000000;
   margin-top: 0.25rem;
 }
 
 .condition-badge {
   display: inline-block;
-  background: #e0f2fe;
-  color: #0369a1;
-  font-weight: 700;
-  padding: 0.4rem 1rem;
+  max-width: 100%;
+  background: #d1fae5;
+  color: #000000;
+  font-weight: 800;
+  padding: 0.4rem 0.9rem;
   border-radius: 20px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin-bottom: 0.5rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
 }
 
 .feels-like {
-  color: #64748b;
+  color: #000000;
   font-size: 0.9rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
 }
 
-/* Core 4 Metrics Grid */
+/* 4 Core Metrics Grid */
 .metrics-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .metric-card {
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: #acf7a4;
+  border: 1px solid #036c1d;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.4rem;
+  min-width: 0; /* Allow auto-scaling without pushing out container */
+  box-sizing: border-box;
+  color: #000000;
+  overflow: hidden;
 }
 
 .metric-icon {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
+  flex-shrink: 0;
 }
 
 .metric-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
 }
 
 .metric-label {
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: 0.62rem;
+  color: #000000;
   text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .metric-val {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wind-info-pill {
+  background: #acf7a4;
+  border: 1px solid #000000;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: #000000;
+  margin-bottom: 1.25rem;
+  word-break: break-word;
+  font-weight: 700;
+}
+
+.dot-sep {
+  margin: 0 0.3rem;
+  color: #000000;
 }
 
 .farming-tip-card {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: #acf7a4;
+  border: 1px solid #000000;
   border-radius: 12px;
   padding: 1rem;
-  color: #166534;
+  color: #000000;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .farming-tip-card h4 {
   margin: 0 0 0.4rem 0;
   font-size: 0.95rem;
   font-weight: 800;
+  color: #000000;
 }
 
 .farming-tip-card p {
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.4;
+  color: #000000;
+  font-weight: 600;
 }
 
 /* Right Column: Forecast Section */
 .forecast-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #b4c0b9;
+  border: 1px solid #d1fae5;
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+  box-sizing: border-box;
+  min-width: max-content;
+  overflow: hidden;
+  color: #000000;
 }
 
 .forecast-header {
@@ -785,13 +972,13 @@ function formatDateShort(dateStr) {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #000000;
 }
 
 .tab-buttons {
   display: flex;
-  gap: 0.5rem;
-  background: #f1f5f9;
+  gap: 0.4rem;
+  background: #e6f4ea;
   padding: 0.25rem;
   border-radius: 10px;
 }
@@ -799,23 +986,24 @@ function formatDateShort(dateStr) {
 .tab-btn {
   background: transparent;
   border: none;
-  padding: 0.4rem 0.8rem;
+  padding: 0.45rem 0.85rem;
   border-radius: 8px;
   font-size: 0.82rem;
-  font-weight: 700;
-  color: #64748b;
+  font-weight: 800;
+  color: #000000;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .tab-btn.active {
-  background: #ffffff;
-  color: #0284c7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #10b981;
+  color: #000000;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.2);
 }
 
-/* Daily Forecast List */
-.daily-forecast-list {
+/* Daily Forecast List - Single Column */
+.daily-single-column {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -823,16 +1011,18 @@ function formatDateShort(dateStr) {
 
 .daily-card {
   display: grid;
-  grid-template-columns: 100px 1fr 110px 100px;
+  grid-template-columns: 110px 1fr 130px 100px;
   align-items: center;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: #acf7a4;
+  border: 1px solid #036c1d;
   padding: 0.85rem 1rem;
   border-radius: 12px;
   gap: 0.5rem;
+  color: #000000;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.04);
 }
 
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   .daily-card {
     grid-template-columns: 1fr 1fr;
     row-gap: 0.5rem;
@@ -845,14 +1035,15 @@ function formatDateShort(dateStr) {
 }
 
 .day-name {
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 900;
+  color: #000000;
   font-size: 0.95rem;
 }
 
 .day-date {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #000000;
+  font-weight: 700;
 }
 
 .icon-col {
@@ -866,8 +1057,9 @@ function formatDateShort(dateStr) {
 }
 
 .weather-desc-sm {
-  font-size: 0.82rem;
-  color: #475569;
+  font-size: 0.85rem;
+  color: #000000;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -878,93 +1070,236 @@ function formatDateShort(dateStr) {
 }
 
 .rain-badge {
-  background: #e0f2fe;
-  color: #0284c7;
+  display: inline-block;
+  background: #f0fdf4;
+  color: #000000;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   padding: 0.25rem 0.6rem;
   border-radius: 12px;
+  border: 1px solid #036c1d;
+  white-space: nowrap; /* Prevents text and % rain wrapping */
 }
 
 .temp-col {
   text-align: right;
   font-weight: 800;
   font-size: 0.95rem;
+  color: #000000;
 }
 
 .temp-max {
-  color: #0f172a;
+  color: #000000;
 }
 
 .temp-divider {
-  color: #cbd5e1;
+  color: #000000;
   margin: 0 0.2rem;
 }
 
 .temp-min {
-  color: #64748b;
+  color: #000000;
 }
 
-/* Hourly Forecast Scroll */
+/* 24-HOUR HOURLY TABLES (2 COLUMNS: 12 & 12) */
 .hourly-subtitle {
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: 0.88rem;
+  color: #000000;
+  font-weight: 700;
   margin: 0 0 1rem 0;
 }
 
-.hourly-scroll-container {
-  display: flex;
-  gap: 0.85rem;
-  overflow-x: auto;
-  padding-bottom: 0.75rem;
+.hourly-tables-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
 }
 
-.hourly-card {
-  min-width: 80px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+@media (max-width: 768px) {
+  .hourly-tables-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.table-column {
+  background: #acf7a4;
+  border: 1px solid #036c1d;
   border-radius: 12px;
-  padding: 0.85rem 0.5rem;
+  padding: 0.85rem;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.04);
+  min-width: flex;
+  color: #000000;
+}
+
+.column-header-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #000000;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 2px solid #036c1d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.weather-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  color: #000000;
+}
+
+.weather-table th {
+  background: #f0fdf4;
+  color: #000000;
+  font-weight: 900;
+  text-align: left;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid #036c1d;
+}
+
+.weather-table td {
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid #036c1d;
+  vertical-align: middle;
+  color: #000000;
+}
+
+.weather-table tr:hover td {
+  background: #d1fae5;
+}
+
+.time-cell {
+  font-weight: 800;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.condition-cell {
+  text-align: center;
+}
+
+.table-icon {
+  font-size: 1.2rem;
+}
+
+.temp-cell {
+  font-weight: 900;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.rain-cell {
+  white-space: nowrap;
+}
+
+.day-cell-wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
+  line-height: 1.2;
 }
 
-.hour-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
+.day-name {
+  font-weight: 900;
+  color: #000000;
+  font-size: 0.88rem;
 }
 
-.hour-icon {
-  font-size: 1.6rem;
-}
-
-.hour-temp {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.hour-rain-pill {
+.day-date {
   font-size: 0.7rem;
+  color: #000000;
   font-weight: 700;
-  color: #0284c7;
+}
+
+.table-rain-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #000000;
+  background: #f0fdf4;
+  padding: 0.15rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid #036c1d;
+  white-space: nowrap; /* Prevent wrapping percentage and rain text */
+}
+
+.table-rain-badge.high-rain {
+  color: #000000;
+  background: #e0f2fe;
+  border-color: #bae6fd;
+}
+
+/* Predict CTA Box */
+.predict-cta-box {
+  margin-top: 1.25rem;
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  color: #000000;
+  padding: 1.1rem 1.25rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-sizing: border-box;
+}
+
+.cta-title {
+  font-size: 1rem;
+  font-weight: 900;
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #000000;
+}
+
+.cta-desc {
+  font-size: 0.84rem;
+  margin: 0;
+  color: #000000;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.btn-predict-cta {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 100%;
+}
+
+.btn-predict-cta:hover {
+  background: #f0fdf4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Loading state */
 .loading-state {
   text-align: center;
   padding: 4rem 1rem;
-  color: #64748b;
+  color: #000000;
+  font-weight: 700;
 }
 
 .spinner-large {
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #0284c7;
+  border: 4px solid #d1fae5;
+  border-top-color: #10b981;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem auto;

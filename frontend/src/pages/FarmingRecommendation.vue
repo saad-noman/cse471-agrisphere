@@ -89,6 +89,23 @@
             <p>Input soil nutrients and climatic parameters to predict suitable crops.</p>
           </div>
 
+          <!-- Weather Data Loaded Banner -->
+          <div v-if="isWeatherLoaded" class="weather-loaded-banner">
+            <div class="banner-title">
+              <strong>Live Weather Data Loaded!</strong>
+            </div>
+            <p class="banner-desc">
+              Loaded weather parameters: 
+              <strong>Temperature: {{ form.temperature }}°C</strong>, 
+              <strong>Humidity: {{ form.humidity }}%</strong>, 
+              <strong>Rainfall: {{ form.rainfall }} mm</strong>, 
+              <strong>Soil Moisture: {{ form.moisture }}%</strong>.
+            </p>
+            <p class="banner-subtext">
+              Review or adjust your soil nutrients (N, P, K, pH) below, then click <strong>"Predict Suitable Crops"</strong>.
+            </p>
+          </div>
+
           <form @submit.prevent="submitForm" class="recommendation-form">
 
 
@@ -302,16 +319,18 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import api from '../services/api';
 import { authState } from '../stores/auth';
 
 const router = useRouter();
+const route = useRoute();
 const viewMode = ref('form'); // 'form', 'list', or 'detail'
 const isHistoryOpen = ref(true); // Toggle history accordion list in sidebar
 const historyList = ref([]);
 const selectedRecord = ref(null);
 const loadingHistory = ref(false);
+const isWeatherLoaded = ref(false);
 
 const form = reactive({
   n: 80,
@@ -333,6 +352,15 @@ onMounted(() => {
     router.push('/login');
     return;
   }
+
+  if (route.query.fromWeather === 'true') {
+    if (route.query.temperature !== undefined) form.temperature = Number(route.query.temperature);
+    if (route.query.humidity !== undefined) form.humidity = Number(route.query.humidity);
+    if (route.query.rainfall !== undefined) form.rainfall = Number(route.query.rainfall);
+    if (route.query.moisture !== undefined) form.moisture = Number(route.query.moisture);
+    isWeatherLoaded.value = true;
+  }
+
   fetchHistory();
 });
 
@@ -1071,6 +1099,38 @@ function formatDate(dateStr) {
 
 .btn-primary-link:hover {
   background: #059669;
+}
+
+/* Weather Loaded Banner */
+.weather-loaded-banner {
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid #10b981;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  color: #065f46;
+}
+
+.banner-title {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+  color: #064e3b;
+}
+
+.banner-desc {
+  font-size: 0.9rem;
+  margin: 0 0 0.35rem 0;
+  line-height: 1.4;
+  color: #065f46;
+}
+
+.banner-subtext {
+  font-size: 0.85rem;
+  margin: 0;
+  color: #047857;
+  font-weight: 600;
 }
 
 .spinner-small {
