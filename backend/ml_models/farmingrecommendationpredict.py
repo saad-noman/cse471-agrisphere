@@ -1,5 +1,7 @@
 import os
 import sys
+import warnings
+warnings.filterwarnings('ignore')
 import joblib
 import numpy as np
 
@@ -11,6 +13,12 @@ POLY_PATH = os.path.join(BASE_DIR, 'poly_transform.pkl')
 
 
 def load_artifacts():
+    try:
+        import sys
+        import sklearn._loss._loss as _loss_sub
+        sys.modules['_loss'] = _loss_sub
+    except Exception:
+        pass
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
     encoder = joblib.load(ENCODER_PATH)

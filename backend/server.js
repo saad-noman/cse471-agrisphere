@@ -18,7 +18,7 @@ const expenseRoutes = require('./routes/expenseRoutes');
 const mapRoutes = require('./routes/mapRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const farmingRecommendationRoutes = require('./routes/FarmingRecommendationRoute');
+const farmingRecommendationRoutes = require('./routes/farmingRecommendationRoute');
 
 const app = express();
 

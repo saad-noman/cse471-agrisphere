@@ -16,6 +16,7 @@ import FarmRecords from '../pages/FarmRecords.vue';
 import Expenses from '../pages/Expenses.vue';
 import Map from '../pages/Map.vue';
 import Weather from '../pages/Weather.vue';
+import GetWeather from '../pages/GetWeather.vue';
 import Timeline from '../pages/Timeline.vue';
 import TagManagement from '../pages/TagManagement.vue';
 import FarmingRecommendation from '../pages/FarmingRecommendation.vue';
@@ -38,6 +39,7 @@ const routes = [
   { path: '/expenses', name: 'Expenses', component: Expenses },
   { path: '/map', name: 'Map', component: Map },
   { path: '/weather', name: 'Weather', component: Weather },
+  { path: '/get-weather', name: 'GetWeather', component: GetWeather },
   { path: '/timeline', name: 'Timeline', component: Timeline },
   { path: '/farming-recommendation', name: 'FarmingRecommendation', component: FarmingRecommendation },
 ];

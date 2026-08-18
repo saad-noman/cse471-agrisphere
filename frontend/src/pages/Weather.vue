@@ -1,8 +1,7 @@
 <template>
-  <div class="weather">
-    <!-- Weather page placeholder -->
-  </div>
+  <GetWeather />
 </template>
 
 <script setup>
+import GetWeather from './GetWeather.vue';
 </script>
