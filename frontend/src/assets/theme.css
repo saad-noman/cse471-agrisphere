@@ -995,6 +995,8 @@ body {
   .leaflet-map {
     height: 55vh;
     min-height: 320px;
+  }
+}
 /* Disease Submission */
 
 .disease-submission-page {
