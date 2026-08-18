@@ -25,6 +25,10 @@
           Dashboard
         </router-link>
 
+        <router-link to="/timeline" class="btn-pill-outline">
+          Activity Timeline
+        </router-link>
+
         <div class="w-100"></div>
 
 
