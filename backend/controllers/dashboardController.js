@@ -4,17 +4,19 @@ const FertilizerRecord = require('../models/FertilizerRecord');
 const PesticideRecord = require('../models/PesticideRecord');
 const Expense = require('../models/Expense');
 const DiseaseCase = require('../models/DiseaseCase');
-const Tag = require('../models/Tag');
+const Recommendation = require('../models/Recommendation');
+const ConsultationRequest = require('../models/ConsultationRequest');
+const ConsultationRecord = require('../models/ConsultationRecord');
 
 
 // GET /api/dashboard
 const getDashboard = async (req, res) => {
   try {
-    const farmerId = req.user.id;
+    const farmerId = req.user.id || req.user._id;
 
-    // ---------------------------------------------------------
-    // 1. GET FARMER'S CROPS
-    // ---------------------------------------------------------
+    // =========================================================
+    // 1. FARMER'S CROPS
+    // =========================================================
 
     const crops = await Crop.find({
       farmer: farmerId,
@@ -25,77 +27,168 @@ const getDashboard = async (req, res) => {
     const cropIds = crops.map((crop) => crop._id);
 
 
-    // ---------------------------------------------------------
-    // 2. CROP HEALTH
-    // ---------------------------------------------------------
-
-    const diseaseCases = await DiseaseCase.find({
-      farmer: farmerId,
-    })
-      .populate('symptoms', 'name type')
-      .populate('farmingConditions', 'name type')
-      .sort({ createdAt: -1 });
-
-
-    const diseaseStatus = {
-      total: diseaseCases.length,
-      pending: diseaseCases.filter(
-        (item) => item.status === 'pending'
-      ).length,
-      resolved: diseaseCases.filter(
-        (item) => item.status === 'resolved'
-      ).length,
-      active: diseaseCases.filter(
-        (item) => item.status !== 'resolved'
-      ).length,
-    };
-
-
-    // ---------------------------------------------------------
-    // 3. FARMING ANALYTICS
-    // ---------------------------------------------------------
+    // =========================================================
+    // 2. FETCH ALL DASHBOARD DATA IN PARALLEL
+    // =========================================================
 
     const [
+      diseaseCases,
       productionRecords,
       fertilizerRecords,
       pesticideRecords,
       expenseRecords,
+      recommendations,
+      consultationRequests,
+      consultationRecords,
     ] = await Promise.all([
+      // Disease / crop health
+      DiseaseCase.find({
+        farmer: farmerId,
+      })
+        .populate('symptoms', 'name type')
+        .populate('farmingConditions', 'name type')
+        .sort({ updatedAt: -1 }),
+
+      // Production
       ProductionRecord.find({
         crop: { $in: cropIds },
+      }).sort({
+        harvestDate: -1,
       }),
 
+      // Fertilizer
       FertilizerRecord.find({
         crop: { $in: cropIds },
-      }).populate('fertilizer', 'name category'),
+      })
+        .populate('fertilizer', 'name category')
+        .sort({
+          applicationDate: -1,
+        }),
 
+      // Pesticide
       PesticideRecord.find({
         crop: { $in: cropIds },
-      }).populate('pesticide', 'name category'),
+      })
+        .populate('pesticide', 'name category')
+        .sort({
+          applicationDate: -1,
+        }),
 
+      // Expenses belonging to this farmer
       Expense.find({
         farmer: farmerId,
+      }).sort({
+        date: -1,
+      }),
+
+      // Recommendation model currently has no farmerId/status
+      Recommendation.find()
+        .sort({
+          createdAt: -1,
+        })
+        .limit(10),
+
+      // Consultation requests
+      ConsultationRequest.find({
+        farmerId: farmerId,
+      }).sort({
+        updatedAt: -1,
+      }),
+
+      // Completed consultation records
+      ConsultationRecord.find({
+        farmerId: farmerId,
+      }).sort({
+        completedAt: -1,
       }),
     ]);
 
 
-    // ---------------------------------------------------------
-    // 4. BUILD ANALYTICS PER CROP
-    // ---------------------------------------------------------
+    // =========================================================
+    // 3. CROP HEALTH
+    // =========================================================
+
+    const diseaseStatus = {
+      total: diseaseCases.length,
+
+      pending: diseaseCases.filter(
+        (item) => item.status === 'pending'
+      ).length,
+
+      underReview: diseaseCases.filter(
+        (item) => item.status === 'under_review'
+      ).length,
+
+      diagnosed: diseaseCases.filter(
+        (item) => item.status === 'diagnosed'
+      ).length,
+
+      active: diseaseCases.filter(
+        (item) =>
+          item.status === 'pending' ||
+          item.status === 'under_review'
+      ).length,
+    };
+
+
+    // Recent diagnosis updates
+    const recentDiagnosisUpdates = diseaseCases
+      .slice(0, 10)
+      .map((diseaseCase) => ({
+        id: diseaseCase._id,
+
+        crop: {
+          type: diseaseCase.crop?.type || null,
+          variety: diseaseCase.crop?.variety || null,
+          growthStage: diseaseCase.crop?.growthStage || null,
+          age: diseaseCase.crop?.age || null,
+        },
+
+        symptoms: (diseaseCase.symptoms || []).map(
+          (symptom) => ({
+            id: symptom._id,
+            name: symptom.name,
+            type: symptom.type,
+          })
+        ),
+
+        farmingConditions: (
+          diseaseCase.farmingConditions || []
+        ).map((condition) => ({
+          id: condition._id,
+          name: condition.name,
+          type: condition.type,
+        })),
+
+        status: diseaseCase.status,
+
+        description: diseaseCase.description || null,
+
+        createdAt: diseaseCase.createdAt,
+        updatedAt: diseaseCase.updatedAt,
+      }));
+
+
+    // =========================================================
+    // 4. FARMING ANALYTICS
+    // =========================================================
 
     const cropAnalytics = crops.map((crop) => {
       const cropId = crop._id.toString();
 
       const cropProduction = productionRecords.filter(
-        (record) => record.crop.toString() === cropId
+        (record) =>
+          record.crop.toString() === cropId
       );
 
       const cropFertilizers = fertilizerRecords.filter(
-        (record) => record.crop.toString() === cropId
+        (record) =>
+          record.crop.toString() === cropId
       );
 
       const cropPesticides = pesticideRecords.filter(
-        (record) => record.crop.toString() === cropId
+        (record) =>
+          record.crop.toString() === cropId
       );
 
       const cropExpenses = expenseRecords.filter(
@@ -105,42 +198,113 @@ const getDashboard = async (req, res) => {
       );
 
 
+      // -------------------------------------------------------
+      // Production
+      // -------------------------------------------------------
+
       const totalProduction = cropProduction.reduce(
-        (sum, record) => sum + (record.quantity || 0),
+        (sum, record) =>
+          sum + Number(record.quantity || 0),
         0
       );
+
+
+      // -------------------------------------------------------
+      // Fertilizer
+      // -------------------------------------------------------
 
       const totalFertilizer = cropFertilizers.reduce(
-        (sum, record) => sum + (record.amount || 0),
+        (sum, record) =>
+          sum + Number(record.amount || 0),
         0
       );
+
+
+      // -------------------------------------------------------
+      // Pesticide
+      // -------------------------------------------------------
 
       const totalPesticide = cropPesticides.reduce(
-        (sum, record) => sum + (record.amount || 0),
+        (sum, record) =>
+          sum + Number(record.amount || 0),
         0
       );
 
+
+      // -------------------------------------------------------
+      // Expenses
+      // -------------------------------------------------------
+
       const totalExpenses = cropExpenses.reduce(
-        (sum, expense) => sum + (expense.amount || 0),
+        (sum, expense) =>
+          sum + Number(expense.amount || 0),
         0
       );
 
 
       // -------------------------------------------------------
       // FARMING CYCLE
+      //
       // plantingDate -> expectedHarvestDate
+      //
+      // We intentionally DO NOT use crop.season.
       // -------------------------------------------------------
 
-      let cycleDays = null;
+      let expectedCycleDays = null;
 
-      if (crop.plantingDate && crop.expectedHarvestDate) {
-        const start = new Date(crop.plantingDate);
-        const end = new Date(crop.expectedHarvestDate);
+      if (
+        crop.plantingDate &&
+        crop.expectedHarvestDate
+      ) {
+        const start =
+          new Date(crop.plantingDate);
 
-        cycleDays = Math.max(
+        const end =
+          new Date(crop.expectedHarvestDate);
+
+        expectedCycleDays = Math.max(
           0,
           Math.ceil(
-            (end - start) / (1000 * 60 * 60 * 24)
+            (end - start) /
+              (1000 * 60 * 60 * 24)
+          )
+        );
+      }
+
+
+      // -------------------------------------------------------
+      // ACTUAL HARVEST INFORMATION
+      //
+      // Uses ProductionRecord.harvestDate.
+      // -------------------------------------------------------
+
+      const actualHarvestDates =
+        cropProduction
+          .filter((record) => record.harvestDate)
+          .map(
+            (record) =>
+              new Date(record.harvestDate)
+          )
+          .sort((a, b) => a - b);
+
+
+      let actualCycleDays = null;
+
+      if (
+        crop.plantingDate &&
+        actualHarvestDates.length > 0
+      ) {
+        const plantingDate =
+          new Date(crop.plantingDate);
+
+        const firstHarvest =
+          actualHarvestDates[0];
+
+        actualCycleDays = Math.max(
+          0,
+          Math.ceil(
+            (firstHarvest - plantingDate) /
+              (1000 * 60 * 60 * 24)
           )
         );
       }
@@ -152,9 +316,25 @@ const getDashboard = async (req, res) => {
 
       let yieldPerAcre = null;
 
-      if (crop.area && crop.area > 0) {
-        yieldPerAcre = totalProduction / crop.area;
+      if (
+        crop.area &&
+        crop.area > 0
+      ) {
+        yieldPerAcre =
+          totalProduction / crop.area;
       }
+
+
+      // -------------------------------------------------------
+      // LAST HARVEST
+      // -------------------------------------------------------
+
+      const lastHarvestDate =
+        actualHarvestDates.length > 0
+          ? actualHarvestDates[
+              actualHarvestDates.length - 1
+            ]
+          : null;
 
 
       return {
@@ -162,179 +342,207 @@ const getDashboard = async (req, res) => {
           id: crop._id,
           name: crop.name,
           cropType: crop.cropType,
-          variety: crop.variety,
-          area: crop.area,
+          variety: crop.variety || null,
+          area: crop.area || null,
           areaUnit: crop.areaUnit,
           status: crop.status,
         },
 
         farmingCycle: {
-          plantingDate: crop.plantingDate,
-          expectedHarvestDate: crop.expectedHarvestDate,
-          cycleDays,
+          plantingDate:
+            crop.plantingDate || null,
+
+          expectedHarvestDate:
+            crop.expectedHarvestDate || null,
+
+          expectedCycleDays,
+
+          actualFirstHarvestDate:
+            actualHarvestDates.length > 0
+              ? actualHarvestDates[0]
+              : null,
+
+          actualLastHarvestDate:
+            lastHarvestDate,
+
+          actualCycleDays,
         },
 
         production: {
           totalQuantity: totalProduction,
-          unit: cropProduction[0]?.unit || 'kg',
-          recordCount: cropProduction.length,
+
+          unit:
+            cropProduction[0]?.unit || 'kg',
+
+          recordCount:
+            cropProduction.length,
+
           yieldPerAcre,
         },
 
         fertilizer: {
           totalAmount: totalFertilizer,
-          unit: cropFertilizers[0]?.unit || 'kg',
-          applicationCount: cropFertilizers.length,
+
+          unit:
+            cropFertilizers[0]?.unit || 'kg',
+
+          applicationCount:
+            cropFertilizers.length,
         },
 
         pesticide: {
           totalAmount: totalPesticide,
-          unit: cropPesticides[0]?.unit || 'L',
-          applicationCount: cropPesticides.length,
+
+          unit:
+            cropPesticides[0]?.unit || 'L',
+
+          applicationCount:
+            cropPesticides.length,
         },
 
         expenses: {
           total: totalExpenses,
-          recordCount: cropExpenses.length,
+
+          recordCount:
+            cropExpenses.length,
         },
       };
     });
 
 
-    // ---------------------------------------------------------
-    // 5. FARM-WIDE TOTALS
-    // ---------------------------------------------------------
+    // =========================================================
+    // 5. FARM-WIDE FARMING TOTALS
+    // =========================================================
 
-    const totalProduction = productionRecords.reduce(
-      (sum, record) => sum + (record.quantity || 0),
-      0
-    );
+    const totalProduction =
+      productionRecords.reduce(
+        (sum, record) =>
+          sum + Number(record.quantity || 0),
+        0
+      );
 
-    const totalFertilizer = fertilizerRecords.reduce(
-      (sum, record) => sum + (record.amount || 0),
-      0
-    );
+    const totalFertilizer =
+      fertilizerRecords.reduce(
+        (sum, record) =>
+          sum + Number(record.amount || 0),
+        0
+      );
 
-    const totalPesticide = pesticideRecords.reduce(
-      (sum, record) => sum + (record.amount || 0),
-      0
-    );
+    const totalPesticide =
+      pesticideRecords.reduce(
+        (sum, record) =>
+          sum + Number(record.amount || 0),
+        0
+      );
 
-    const totalExpenses = expenseRecords.reduce(
-      (sum, expense) => sum + (expense.amount || 0),
-      0
-    );
-
-
-    // ---------------------------------------------------------
-    // 6. RECENT DIAGNOSIS UPDATES
-    // ---------------------------------------------------------
-
-    const recentDiagnosisUpdates = diseaseCases
-      .slice(0, 10)
-      .map((diseaseCase) => ({
-        id: diseaseCase._id,
-
-        crop: {
-          type: diseaseCase.crop?.type,
-          variety: diseaseCase.crop?.variety,
-          growthStage: diseaseCase.crop?.growthStage,
-          age: diseaseCase.crop?.age,
-        },
-
-        symptoms: (diseaseCase.symptoms || []).map(
-          (symptom) => ({
-            id: symptom._id,
-            name: symptom.name,
-          })
-        ),
-
-        status: diseaseCase.status,
-
-        description: diseaseCase.description,
-
-        createdAt: diseaseCase.createdAt,
-        updatedAt: diseaseCase.updatedAt,
-      }));
+    const totalExpenses =
+      expenseRecords.reduce(
+        (sum, expense) =>
+          sum + Number(expense.amount || 0),
+        0
+      );
 
 
-    // ---------------------------------------------------------
-    // 7. RECOMMENDATION SUMMARY
-    // ---------------------------------------------------------
+    // =========================================================
+    // 6. RECOMMENDATION SUMMARY
+    // =========================================================
     //
-    // TODO:
-    // Replace this static data with real Recommendation model
-    // aggregation when recommendation functionality is ready.
+    // IMPORTANT:
+    // Recommendation currently has:
     //
+    // cropType
+    // title
+    // description
+    //
+    // It does NOT have:
+    // farmerId
+    // status
+    //
+    // Therefore we cannot honestly calculate farmer-specific
+    // pending/completed recommendation counts.
+    // =========================================================
 
     const recommendationSummary = {
-      total: 3,
+      total: recommendations.length,
 
-      pending: 1,
-
-      completed: 2,
-
-      recent: [
-        {
-          title: 'Monitor crop health',
+      recent: recommendations
+        .slice(0, 5)
+        .map((recommendation) => ({
+          id: recommendation._id,
+          cropType: recommendation.cropType || null,
+          title: recommendation.title || null,
           description:
-            'Continue monitoring the crop for visible symptoms.',
-          status: 'active',
-        },
-
-        {
-          title: 'Fertilizer application',
-          description:
-            'Review fertilizer application schedule.',
-          status: 'completed',
-        },
-
-        {
-          title: 'Pest monitoring',
-          description:
-            'Monitor the field for signs of pest activity.',
-          status: 'completed',
-        },
-      ],
+            recommendation.description || null,
+          createdAt: recommendation.createdAt,
+          updatedAt: recommendation.updatedAt,
+        })),
     };
 
 
-    // ---------------------------------------------------------
-    // 8. CONSULTATION SUMMARY
-    // ---------------------------------------------------------
-    //
-    // TODO:
-    // Replace this static data with real consultation/
-    // appointment aggregation when consultation dashboard
-    // functionality is implemented.
-    //
+    // =========================================================
+    // 7. CONSULTATION SUMMARY
+    // =========================================================
 
     const consultationSummary = {
-      total: 2,
+      total: consultationRequests.length,
 
-      pending: 1,
+      pending: consultationRequests.filter(
+        (item) => item.status === 'pending'
+      ).length,
 
-      completed: 1,
+      approved: consultationRequests.filter(
+        (item) => item.status === 'approved'
+      ).length,
 
-      recent: [
-        {
-          topic: 'Crop health consultation',
-          status: 'completed',
-          date: '2026-08-10',
-        },
+      rejected: consultationRequests.filter(
+        (item) => item.status === 'rejected'
+      ).length,
 
-        {
-          topic: 'Pest management consultation',
-          status: 'pending',
-          date: '2026-08-15',
-        },
-      ],
+      rescheduled: consultationRequests.filter(
+        (item) => item.status === 'rescheduled'
+      ).length,
+
+      completed: consultationRequests.filter(
+        (item) => item.status === 'completed'
+      ).length,
+
+      records: consultationRecords.length,
+
+      recent: consultationRequests
+        .slice(0, 5)
+        .map((request) => ({
+          id: request._id,
+
+          title:
+            request.title || null,
+
+          cropType:
+            request.cropType || null,
+
+          subject:
+            request.subject || null,
+
+          consultationType:
+            request.consultationType || null,
+
+          preferredDate:
+            request.preferredDate || null,
+
+          status:
+            request.status,
+
+          createdAt:
+            request.createdAt,
+
+          updatedAt:
+            request.updatedAt,
+        })),
     };
 
 
-    // ---------------------------------------------------------
-    // 9. RESPONSE
-    // ---------------------------------------------------------
+    // =========================================================
+    // 8. RESPONSE
+    // =========================================================
 
     res.json({
       farmer: farmerId,
@@ -343,7 +551,18 @@ const getDashboard = async (req, res) => {
         cropCount: crops.length,
 
         activeCrops: crops.filter(
-          (crop) => crop.status === 'active'
+          (crop) =>
+            crop.status === 'active'
+        ).length,
+
+        harvestedCrops: crops.filter(
+          (crop) =>
+            crop.status === 'harvested'
+        ).length,
+
+        abandonedCrops: crops.filter(
+          (crop) =>
+            crop.status === 'abandoned'
         ).length,
 
         diseaseCases: diseaseStatus,
@@ -354,16 +573,22 @@ const getDashboard = async (req, res) => {
       farmingAnalytics: {
         totals: {
           production: totalProduction,
+
           productionUnit:
-            productionRecords[0]?.unit || 'kg',
+            productionRecords[0]?.unit ||
+            'kg',
 
           fertilizer: totalFertilizer,
+
           fertilizerUnit:
-            fertilizerRecords[0]?.unit || 'kg',
+            fertilizerRecords[0]?.unit ||
+            'kg',
 
           pesticide: totalPesticide,
+
           pesticideUnit:
-            pesticideRecords[0]?.unit || 'L',
+            pesticideRecords[0]?.unit ||
+            'L',
 
           expenses: totalExpenses,
         },
@@ -379,11 +604,17 @@ const getDashboard = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Dashboard error:', err);
+    console.error(
+      'Dashboard error:',
+      err
+    );
 
     res.status(500).json({
-      message: 'Failed to load dashboard',
-      error: err.message,
+      message:
+        'Failed to load dashboard',
+
+      error:
+        err.message,
     });
   }
 };
