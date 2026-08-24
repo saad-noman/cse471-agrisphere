@@ -216,8 +216,8 @@ const getDiseaseMatches = async (req, res) => {
       const matchPercentage =
         totalDiseaseSymptoms > 0
           ? Math.round(
-              (matchedSymptomsCount / totalDiseaseSymptoms) * 100
-            )
+            (matchedSymptomsCount / totalDiseaseSymptoms) * 100
+          )
           : 0;
 
       return {
@@ -420,117 +420,117 @@ const getDiseaseCase = async (req, res) => {
 };
 
 const submitDiagnosisReport = async (req, res) => {
-  try {
-    const { caseId } = req.params;
-    const { diseaseName, recommendation, additionalNotes } = req.body;
+    try {
+      const { caseId } = req.params;
+      const { diseaseName, recommendation, additionalNotes } = req.body;
 
-    if (!diseaseName || !recommendation) {
-      return res.status(400).json({
-        message: 'Disease name and recommendation are required',
+      if (!diseaseName || !recommendation) {
+        return res.status(400).json({
+          message: 'Disease name and recommendation are required',
+        });
+      }
+
+      const diseaseCase = await DiseaseCase.findById(caseId);
+      if (!diseaseCase) {
+        return res.status(404).json({
+          message: 'Disease case not found',
+        });
+      }
+
+      diseaseCase.diagnosisReport = {
+        expert: req.user.id,
+        expertName: req.user.name || 'Agricultural Expert',
+        diseaseName,
+        recommendation,
+        additionalNotes: additionalNotes || '',
+        createdAt: new Date(),
+      };
+
+      diseaseCase.status = 'resolved';
+      await diseaseCase.save();
+
+      // Create a notification for the farmer
+      await Notification.create({
+        userId: diseaseCase.farmer,
+        message: `An expert has provided a Crop Diagnosis Report for your ${diseaseCase.crop.type} case.`,
+        link: '/diagnosis-history',
+      });
+
+      const populatedCase = await DiseaseCase.findById(caseId)
+        .populate('symptoms', 'name')
+        .populate('farmingConditions', 'name')
+        .populate('farmer', 'name email');
+
+      res.json({
+        message: 'Diagnosis report submitted successfully',
+        diseaseCase: populatedCase,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        message: 'Failed to submit diagnosis report',
+        error: err.message,
       });
     }
+  };
 
-    const diseaseCase = await DiseaseCase.findById(caseId);
-    if (!diseaseCase) {
-      return res.status(404).json({
-        message: 'Disease case not found',
+  // DELETE /api/diseases/tags/:tagId
+  const deleteTag = async (req, res) => {
+    try {
+      const { tagId } = req.params;
+
+      const tag = await Tag.findById(tagId);
+
+      if (!tag) {
+        return res.status(404).json({
+          message: 'Tag not found',
+        });
+      }
+
+      // Prevent deleting tags that are currently in use
+      const inDiseaseCases = await DiseaseCase.exists({
+        $or: [
+          { symptoms: tagId },
+          { farmingConditions: tagId },
+        ],
+      });
+
+      const inDiseaseLibrary = await Disease.exists({
+        symptoms: tagId,
+      });
+
+      if (inDiseaseCases || inDiseaseLibrary) {
+        return res.status(400).json({
+          message: 'Cannot delete tag because it is currently in use',
+        });
+      }
+
+      await tag.deleteOne();
+
+      res.json({
+        message: 'Tag deleted successfully',
+      });
+    } catch (err) {
+      res.status(500).json({
+        message: 'Failed to delete tag',
+        error: err.message,
       });
     }
+  };
 
-    diseaseCase.diagnosisReport = {
-      expert: req.user.id,
-      expertName: req.user.name || 'Agricultural Expert',
-      diseaseName,
-      recommendation,
-      additionalNotes: additionalNotes || '',
-      createdAt: new Date(),
-    };
+  module.exports = {
+    submitDiseaseCase,
+    searchTags,
+    createTag,
+    deleteTag,
 
-    diseaseCase.status = 'resolved';
-    await diseaseCase.save();
+    getDiseaseCases,
+    getDiseaseCase,
+    getDiseaseMatches,
+    submitDiagnosisReport,
 
-    // Create a notification for the farmer
-    await Notification.create({
-      userId: diseaseCase.farmer,
-      message: `An expert has provided a Crop Diagnosis Report for your ${diseaseCase.crop.type} case.`,
-      link: '/diagnosis-history',
-    });
-
-    const populatedCase = await DiseaseCase.findById(caseId)
-      .populate('symptoms', 'name')
-      .populate('farmingConditions', 'name')
-      .populate('farmer', 'name email');
-
-    res.json({
-      message: 'Diagnosis report submitted successfully',
-      diseaseCase: populatedCase,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: 'Failed to submit diagnosis report',
-      error: err.message,
-    });
-  }
-};
-
-// DELETE /api/diseases/tags/:tagId
-const deleteTag = async (req, res) => {
-  try {
-    const { tagId } = req.params;
-
-    const tag = await Tag.findById(tagId);
-
-    if (!tag) {
-      return res.status(404).json({
-        message: 'Tag not found',
-      });
-    }
-
-    // Prevent deleting tags that are currently in use
-    const inDiseaseCases = await DiseaseCase.exists({
-      $or: [
-        { symptoms: tagId },
-        { farmingConditions: tagId },
-      ],
-    });
-
-    const inDiseaseLibrary = await Disease.exists({
-      symptoms: tagId,
-    });
-
-    if (inDiseaseCases || inDiseaseLibrary) {
-      return res.status(400).json({
-        message: 'Cannot delete tag because it is currently in use',
-      });
-    }
-
-    await tag.deleteOne();
-
-    res.json({
-      message: 'Tag deleted successfully',
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: 'Failed to delete tag',
-      error: err.message,
-    });
-  }
-};
-
-module.exports = {
-  submitDiseaseCase,
-  searchTags,
-  createTag,
-  deleteTag,
-
-  getDiseaseCases,
-  getDiseaseCase,
-  getDiseaseMatches,
-  submitDiagnosisReport,
-
-  createDisease,
-  getDiseases,
-  getDisease,
-  deleteDisease,
-};
+    createDisease,
+    getDiseases,
+    getDisease,
+    deleteDisease,
+  };
