@@ -5,10 +5,12 @@ const fs = require('fs');
 // Upload directories
 const generalUploadDir = path.join(__dirname, '../uploads');
 const diseaseCaseUploadDir = path.join(__dirname, '../uploads/disease-cases');
+const stockCropsUploadDir = path.join(__dirname, '../uploads/stock-crops');
 
 // Create directories if they don't exist
 fs.mkdirSync(generalUploadDir, { recursive: true });
 fs.mkdirSync(diseaseCaseUploadDir, { recursive: true });
+fs.mkdirSync(stockCropsUploadDir, { recursive: true });
 
 /* ===========================
    General Upload Storage

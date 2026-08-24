@@ -2,6 +2,12 @@ import os
 import sys
 import warnings
 warnings.filterwarnings('ignore')
+
+try:
+    import sklearn._loss._loss
+    sys.modules['_loss'] = sys.modules['sklearn._loss._loss']
+except Exception:
+    pass
 import joblib
 import numpy as np
 

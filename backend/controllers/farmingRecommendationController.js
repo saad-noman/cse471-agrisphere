@@ -19,7 +19,7 @@ const predictCrop = (req, res) => {
     }
 
     const input = requiredFields.map((field) => payload[field]);
-    const pythonExecutable = process.env.PYTHON || process.env.PYTHON_PATH || 'python';
+    const pythonExecutable = process.env.PYTHON || process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : 'python3');
     const scriptPath = path.join(__dirname, '..', 'ml_models', 'farmingrecommendationpredict.py');
 
     const pythonProcess = spawn(pythonExecutable, [scriptPath, ...input], {
