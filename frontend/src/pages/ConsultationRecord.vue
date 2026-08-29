@@ -2,14 +2,14 @@
   <div class="consultation-record container py-4">
     <h2 class="mb-4">Consultation Record</h2>
 
-    <p v-if="appointments.length === 0">No consultations yet.</p>
+    <p v-if="appointments.length === 0" class="empty-state">No consultations yet.</p>
     <ul class="list-group">
       <li v-for="appointment in appointments" :key="appointment._id" class="list-group-item">
         <div class="fw-bold">{{ appointment.title }}</div>
         <div class="text-muted small">Farmer: {{ appointment.farmerId?.name }}</div>
         <div class="small">Mode: {{ appointment.consultationType }}</div>
         <div class="small">{{ formatDateOnly(appointment.date) }} {{ appointment.time }}</div>
-        <span class="badge" :class="statusBadgeClass(appointment.status)">{{ appointment.status }}</span>
+        <span class="status-badge" :class="statusBadgeClass(appointment.status)">{{ appointment.status }}</span>
 
         <div v-if="appointment.record" class="mt-2">
           <div v-if="appointment.record.diagnosis"><strong>Diagnosis:</strong> {{ appointment.record.diagnosis }}</div>
@@ -36,8 +36,11 @@
               <label class="form-label">Notes</label>
               <textarea v-model="recordForm.notes" class="form-control"></textarea>
             </div>
-            <button class="btn-pill" @click="handleComplete(appointment)">Save &amp; Complete</button>
-            <button type="button" class="btn btn-outline-secondary ms-2" @click="openId = null">Cancel</button>
+            <button class="btn-pill" :disabled="completing" @click="handleComplete(appointment)">
+              {{ completing ? 'Saving...' : 'Save & Complete' }}
+            </button>
+            <button type="button" class="btn-pill-secondary ms-2" @click="openId = null">Cancel</button>
+            <p v-if="completeError" class="app-alert app-alert-danger">{{ completeError }}</p>
           </div>
         </div>
       </li>
@@ -52,6 +55,8 @@ import { getMyAppointments, completeAppointment } from '../services/consultation
 const appointments = ref([]);
 const openId = ref(null);
 const recordForm = ref({ diagnosis: '', recommendations: '', notes: '' });
+const completing = ref(false);
+const completeError = ref('');
 
 onMounted(loadAppointments);
 
@@ -61,10 +66,19 @@ async function loadAppointments() {
 }
 
 async function handleComplete(appointment) {
-  await completeAppointment(appointment._id, recordForm.value);
-  openId.value = null;
-  recordForm.value = { diagnosis: '', recommendations: '', notes: '' };
-  await loadAppointments();
+  completeError.value = '';
+  completing.value = true;
+
+  try {
+    await completeAppointment(appointment._id, recordForm.value);
+    openId.value = null;
+    recordForm.value = { diagnosis: '', recommendations: '', notes: '' };
+    await loadAppointments();
+  } catch (err) {
+    completeError.value = err.response?.data?.message || 'Could not save the record. Please try again.';
+  } finally {
+    completing.value = false;
+  }
 }
 
 function formatDateOnly(value) {
@@ -72,8 +86,8 @@ function formatDateOnly(value) {
 }
 
 function statusBadgeClass(status) {
-  if (status === 'completed') return 'bg-success';
-  if (status === 'cancelled') return 'bg-danger';
-  return 'bg-secondary';
+  if (status === 'completed') return 'status-success';
+  if (status === 'cancelled') return 'status-danger';
+  return 'status-neutral';
 }
 </script>

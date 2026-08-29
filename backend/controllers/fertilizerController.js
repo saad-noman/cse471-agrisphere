@@ -1,9 +1,10 @@
 const Crop = require('../models/Crop');
 const Fertilizer = require('../models/Fertilizer');
 const FertilizerRecord = require('../models/FertilizerRecord');
-
+const sendError = require('../utils/sendError');
 
 // POST /api/crops/:cropId/fertilizers
+// To record a fertilizer application on a crop
 const createFertilizerRecord = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -23,21 +24,24 @@ const createFertilizerRecord = async (req, res) => {
       });
     }
 
+    const { fertilizer, amount, unit, applicationDate, notes } = req.body;
     const record = await FertilizerRecord.create({
       crop: crop._id,
-      ...req.body,
+      fertilizer,
+      amount,
+      unit,
+      applicationDate,
+      notes,
     });
 
     res.status(201).json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
 // GET /api/crops/:cropId/fertilizers
+// To list a crop's fertilizer application records
 const getFertilizerRecords = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -67,14 +71,12 @@ const getFertilizerRecords = async (req, res) => {
 
     res.json(records);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// GET /api/fertilizers/:id
+// GET /api/fertilizer-records/:id
+// To get a single fertilizer application record
 const getFertilizerRecord = async (req, res) => {
   try {
     const record = await FertilizerRecord.findById(req.params.id)
@@ -98,14 +100,12 @@ const getFertilizerRecord = async (req, res) => {
 
     res.json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// PUT /api/fertilizers/:id
+// PUT /api/fertilizer-records/:id
+// To update a fertilizer application record
 const updateFertilizerRecord = async (req, res) => {
   try {
     const record = await FertilizerRecord.findById(req.params.id)
@@ -127,20 +127,21 @@ const updateFertilizerRecord = async (req, res) => {
       });
     }
 
-    Object.assign(record, req.body);
+    const updatable = ['amount', 'unit', 'applicationDate', 'notes'];
+    for (const field of updatable) {
+      if (field in req.body) record[field] = req.body[field];
+    }
 
     await record.save();
 
     res.json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// DELETE /api/fertilizers/:id
+// DELETE /api/fertilizer-records/:id
+// To delete a fertilizer application record
 const deleteFertilizerRecord = async (req, res) => {
   try {
     const record = await FertilizerRecord.findById(req.params.id)
@@ -168,24 +169,24 @@ const deleteFertilizerRecord = async (req, res) => {
       message: 'Fertilizer record deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// GET /api/fertilizers
+// To list the fertilizer catalog
 const getFertilizers = async (req, res) => {
   try {
     const fertilizers = await Fertilizer.find().sort({ name: 1 });
 
     res.json(fertilizers);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// POST /api/fertilizers
+// To add a new fertilizer to the catalog
 const createFertilizer = async (req, res) => {
   try {
     const { name, category, description } = req.body;
@@ -206,12 +207,12 @@ const createFertilizer = async (req, res) => {
 
     res.status(201).json(fertilizer);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// GET /api/fertilizers/:id
+// To get a single fertilizer by id
 const getFertilizer = async (req, res) => {
   try {
     const fertilizer = await Fertilizer.findById(req.params.id);
@@ -224,12 +225,12 @@ const getFertilizer = async (req, res) => {
 
     res.json(fertilizer);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// PUT /api/fertilizers/:id
+// To update a fertilizer in the catalog
 const updateFertilizer = async (req, res) => {
   try {
     const fertilizer = await Fertilizer.findById(req.params.id);
@@ -240,18 +241,21 @@ const updateFertilizer = async (req, res) => {
       });
     }
 
-    Object.assign(fertilizer, req.body);
+    const updatable = ['name', 'category', 'description'];
+    for (const field of updatable) {
+      if (field in req.body) fertilizer[field] = req.body[field];
+    }
 
     await fertilizer.save();
 
     res.json(fertilizer);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// DELETE /api/fertilizers/:id
+// To delete a fertilizer from the catalog
 const deleteFertilizer = async (req, res) => {
   try {
     const fertilizer = await Fertilizer.findById(req.params.id);
@@ -268,21 +272,17 @@ const deleteFertilizer = async (req, res) => {
       message: 'Fertilizer deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 module.exports = {
-  // Fertilizer catalog
   getFertilizers,
   createFertilizer,
   getFertilizer,
   updateFertilizer,
   deleteFertilizer,
 
-  // Fertilizer records
   createFertilizerRecord,
   getFertilizerRecords,
   getFertilizerRecord,

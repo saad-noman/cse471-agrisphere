@@ -145,7 +145,7 @@
         </h2>
 
         <button
-          class="btn btn-outline-secondary btn-sm"
+          class="btn-pill-secondary btn-pill-sm"
           @click="loadItems"
         >
           Refresh
@@ -155,7 +155,7 @@
 
       <div
         v-if="loading"
-        class="text-muted"
+        class="loading-state"
       >
         Loading...
       </div>
@@ -213,14 +213,14 @@
     </template>
 
     <button
-      class="btn btn-success btn-sm me-2"
+      class="btn-pill me-2"
       @click="saveEdit"
     >
       Save
     </button>
 
     <button
-      class="btn btn-secondary btn-sm"
+      class="btn-pill-outline"
       @click="cancelEdit"
     >
       Cancel
@@ -264,14 +264,14 @@
 
       <button
         v-if="catalogType !== 'tags'"
-        class="btn btn-warning btn-sm me-2"
+        class="btn-pill-outline me-2"
         @click="startEdit(item)"
       >
         Edit
       </button>
 
       <button
-        class="btn btn-sm btn-outline-danger"
+        class="btn-pill-danger btn-pill-sm"
 
         @click="deleteItem(item._id)"
       >
@@ -292,6 +292,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { authState } from '../stores/auth';
 
+import { confirmDelete } from '../stores/confirm';
 const API_BASE = 'http://localhost:5000/api';
 
 const catalogType = ref('tags');
@@ -414,7 +415,8 @@ async function submitItem() {
 }
 
 async function deleteItem(id) {
-  if (!confirm('Delete this item?')) {
+  const confirmed = await confirmDelete('Are you sure you want to delete this item?');
+  if (!confirmed) {
     return;
   }
 

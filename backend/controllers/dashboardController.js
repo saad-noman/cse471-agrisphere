@@ -1,3 +1,4 @@
+const sendError = require('../utils/sendError');
 const Crop = require('../models/Crop');
 const ProductionRecord = require('../models/ProductionRecord');
 const FertilizerRecord = require('../models/FertilizerRecord');
@@ -8,15 +9,11 @@ const Recommendation = require('../models/Recommendation');
 const ConsultationRequest = require('../models/ConsultationRequest');
 const ConsultationRecord = require('../models/ConsultationRecord');
 
-
 // GET /api/dashboard
+// To get the farmer's dashboard summary (crop health, farming analytics, recommendations, consultations)
 const getDashboard = async (req, res) => {
   try {
     const farmerId = req.user.id || req.user._id;
-
-    // =========================================================
-    // 1. FARMER'S CROPS
-    // =========================================================
 
     const crops = await Crop.find({
       farmer: farmerId,
@@ -25,11 +22,6 @@ const getDashboard = async (req, res) => {
     });
 
     const cropIds = crops.map((crop) => crop._id);
-
-
-    // =========================================================
-    // 2. FETCH ALL DASHBOARD DATA IN PARALLEL
-    // =========================================================
 
     const [
       diseaseCases,
@@ -41,7 +33,6 @@ const getDashboard = async (req, res) => {
       consultationRequests,
       consultationRecords,
     ] = await Promise.all([
-      // Disease / crop health
       DiseaseCase.find({
         farmer: farmerId,
       })
@@ -49,14 +40,12 @@ const getDashboard = async (req, res) => {
         .populate('farmingConditions', 'name type')
         .sort({ updatedAt: -1 }),
 
-      // Production
       ProductionRecord.find({
         crop: { $in: cropIds },
       }).sort({
         harvestDate: -1,
       }),
 
-      // Fertilizer
       FertilizerRecord.find({
         crop: { $in: cropIds },
       })
@@ -65,7 +54,6 @@ const getDashboard = async (req, res) => {
           applicationDate: -1,
         }),
 
-      // Pesticide
       PesticideRecord.find({
         crop: { $in: cropIds },
       })
@@ -74,39 +62,30 @@ const getDashboard = async (req, res) => {
           applicationDate: -1,
         }),
 
-      // Expenses belonging to this farmer
       Expense.find({
         farmer: farmerId,
       }).sort({
         date: -1,
       }),
 
-      // Recommendation model currently has no farmerId/status
       Recommendation.find()
         .sort({
           createdAt: -1,
         })
         .limit(10),
 
-      // Consultation requests
       ConsultationRequest.find({
         farmerId: farmerId,
       }).sort({
         updatedAt: -1,
       }),
 
-      // Completed consultation records
       ConsultationRecord.find({
         farmerId: farmerId,
       }).sort({
         completedAt: -1,
       }),
     ]);
-
-
-    // =========================================================
-    // 3. CROP HEALTH
-    // =========================================================
 
     const diseaseStatus = {
       total: diseaseCases.length,
@@ -130,8 +109,6 @@ const getDashboard = async (req, res) => {
       ).length,
     };
 
-
-    // Recent diagnosis updates
     const recentDiagnosisUpdates = diseaseCases
       .slice(0, 10)
       .map((diseaseCase) => ({
@@ -168,11 +145,6 @@ const getDashboard = async (req, res) => {
         updatedAt: diseaseCase.updatedAt,
       }));
 
-
-    // =========================================================
-    // 4. FARMING ANALYTICS
-    // =========================================================
-
     const cropAnalytics = crops.map((crop) => {
       const cropId = crop._id.toString();
 
@@ -197,21 +169,11 @@ const getDashboard = async (req, res) => {
           expense.crop.toString() === cropId
       );
 
-
-      // -------------------------------------------------------
-      // Production
-      // -------------------------------------------------------
-
       const totalProduction = cropProduction.reduce(
         (sum, record) =>
           sum + Number(record.quantity || 0),
         0
       );
-
-
-      // -------------------------------------------------------
-      // Fertilizer
-      // -------------------------------------------------------
 
       const totalFertilizer = cropFertilizers.reduce(
         (sum, record) =>
@@ -219,36 +181,17 @@ const getDashboard = async (req, res) => {
         0
       );
 
-
-      // -------------------------------------------------------
-      // Pesticide
-      // -------------------------------------------------------
-
       const totalPesticide = cropPesticides.reduce(
         (sum, record) =>
           sum + Number(record.amount || 0),
         0
       );
 
-
-      // -------------------------------------------------------
-      // Expenses
-      // -------------------------------------------------------
-
       const totalExpenses = cropExpenses.reduce(
         (sum, expense) =>
           sum + Number(expense.amount || 0),
         0
       );
-
-
-      // -------------------------------------------------------
-      // FARMING CYCLE
-      //
-      // plantingDate -> expectedHarvestDate
-      //
-      // We intentionally DO NOT use crop.season.
-      // -------------------------------------------------------
 
       let expectedCycleDays = null;
 
@@ -271,13 +214,6 @@ const getDashboard = async (req, res) => {
         );
       }
 
-
-      // -------------------------------------------------------
-      // ACTUAL HARVEST INFORMATION
-      //
-      // Uses ProductionRecord.harvestDate.
-      // -------------------------------------------------------
-
       const actualHarvestDates =
         cropProduction
           .filter((record) => record.harvestDate)
@@ -286,7 +222,6 @@ const getDashboard = async (req, res) => {
               new Date(record.harvestDate)
           )
           .sort((a, b) => a - b);
-
 
       let actualCycleDays = null;
 
@@ -309,11 +244,6 @@ const getDashboard = async (req, res) => {
         );
       }
 
-
-      // -------------------------------------------------------
-      // YIELD PER ACRE
-      // -------------------------------------------------------
-
       let yieldPerAcre = null;
 
       if (
@@ -324,18 +254,12 @@ const getDashboard = async (req, res) => {
           totalProduction / crop.area;
       }
 
-
-      // -------------------------------------------------------
-      // LAST HARVEST
-      // -------------------------------------------------------
-
       const lastHarvestDate =
         actualHarvestDates.length > 0
           ? actualHarvestDates[
               actualHarvestDates.length - 1
             ]
           : null;
-
 
       return {
         crop: {
@@ -409,11 +333,6 @@ const getDashboard = async (req, res) => {
       };
     });
 
-
-    // =========================================================
-    // 5. FARM-WIDE FARMING TOTALS
-    // =========================================================
-
     const totalProduction =
       productionRecords.reduce(
         (sum, record) =>
@@ -442,26 +361,6 @@ const getDashboard = async (req, res) => {
         0
       );
 
-
-    // =========================================================
-    // 6. RECOMMENDATION SUMMARY
-    // =========================================================
-    //
-    // IMPORTANT:
-    // Recommendation currently has:
-    //
-    // cropType
-    // title
-    // description
-    //
-    // It does NOT have:
-    // farmerId
-    // status
-    //
-    // Therefore we cannot honestly calculate farmer-specific
-    // pending/completed recommendation counts.
-    // =========================================================
-
     const recommendationSummary = {
       total: recommendations.length,
 
@@ -477,11 +376,6 @@ const getDashboard = async (req, res) => {
           updatedAt: recommendation.updatedAt,
         })),
     };
-
-
-    // =========================================================
-    // 7. CONSULTATION SUMMARY
-    // =========================================================
 
     const consultationSummary = {
       total: consultationRequests.length,
@@ -538,11 +432,6 @@ const getDashboard = async (req, res) => {
             request.updatedAt,
         })),
     };
-
-
-    // =========================================================
-    // 8. RESPONSE
-    // =========================================================
 
     res.json({
       farmer: farmerId,
@@ -604,21 +493,9 @@ const getDashboard = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(
-      'Dashboard error:',
-      err
-    );
-
-    res.status(500).json({
-      message:
-        'Failed to load dashboard',
-
-      error:
-        err.message,
-    });
+    sendError(res, 500, 'Failed to load dashboard', err);
   }
 };
-
 
 module.exports = {
   getDashboard,

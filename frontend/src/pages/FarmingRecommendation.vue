@@ -51,7 +51,7 @@
                 <div class="crop-badge">
                   <span class="crop-name">{{ item.recommendedCrop }}</span>
                 </div>
-                <button v-if="authState.user?.role === 'expert'" type="button" class="btn-delete-item" title="Delete record"
+                <button type="button" class="btn-delete-item" title="Delete record"
                   @click.stop="deleteRecord(item._id)">
                   ✕
                 </button>
@@ -305,7 +305,7 @@
           </div>
 
           <!-- Detail Action Bar -->
-          <div v-if="authState.user?.role === 'expert'" class="detail-actions">
+          <div class="detail-actions">
             <button type="button" class="btn-danger-outline" @click="deleteRecord(selectedRecord._id)">
               Delete Record
             </button>
@@ -323,6 +323,7 @@ import { useRouter, useRoute } from 'vue-router';
 import api from '../services/api';
 import { authState } from '../stores/auth';
 
+import { confirmDelete } from '../stores/confirm';
 const router = useRouter();
 const route = useRoute();
 const viewMode = ref('form'); // 'form', 'list', or 'detail'
@@ -425,7 +426,7 @@ async function submitForm() {
 }
 
 async function deleteRecord(id) {
-  if (!confirm('Are you sure you want to delete this recommendation record?')) return;
+  if (!(await confirmDelete('Are you sure you want to delete this recommendation record?'))) return;
   try {
     await api.delete(`/farming-recommendation/history/${id}`);
     historyList.value = historyList.value.filter(item => item._id !== id);
@@ -434,7 +435,9 @@ async function deleteRecord(id) {
       viewMode.value = 'form';
     }
   } catch (err) {
-    alert('Failed to delete history record: ' + (err.response?.data?.message || err.message));
+    // Surface the failure in the page's existing error banner rather than a
+    // browser-native alert box.
+    error.value = 'Failed to delete history record: ' + (err.response?.data?.message || err.message);
   }
 }
 
@@ -458,13 +461,13 @@ function formatDate(dateStr) {
   margin: 0 auto;
   padding: 1.5rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #1a202c;
+  color: var(--text-dark);
 }
 
 /* Header */
 .page-header {
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  background: var(--brand-banner);
   color: #ffffff;
   padding: 2rem;
   border-radius: 16px;
@@ -500,8 +503,8 @@ function formatDate(dateStr) {
 
 /* Left Sidebar Panel */
 .sidebar-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -517,9 +520,9 @@ function formatDate(dateStr) {
   align-items: center;
   justify-content: center;
   padding: 0.85rem 1rem;
-  background: #ecfdf5;
-  color: #047857;
-  border: 2px solid #a7f3d0;
+  background: var(--green-50);
+  color: var(--green-dark);
+  border: 2px solid var(--green-50);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
@@ -528,14 +531,14 @@ function formatDate(dateStr) {
 }
 
 .btn-request-new:hover {
-  background: #d1fae5;
-  border-color: #34d399;
+  background: var(--green-50);
+  border-color: var(--green-light);
 }
 
 .btn-request-new.active {
-  background: #10b981;
+  background: var(--brand-fill);
   color: #ffffff;
-  border-color: #10b981;
+  border-color: var(--green-light);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
@@ -546,9 +549,9 @@ function formatDate(dateStr) {
   justify-content: space-between;
   margin-bottom: 1rem;
   padding: 0.85rem 1rem;
-  background: #ecfdf5;
-  color: #047857;
-  border: 2px solid #a7f3d0;
+  background: var(--green-50);
+  color: var(--green-dark);
+  border: 2px solid var(--green-50);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
@@ -558,14 +561,14 @@ function formatDate(dateStr) {
 }
 
 .history-header:hover {
-  background: #d1fae5;
-  border-color: #34d399;
+  background: var(--green-50);
+  border-color: var(--green-light);
 }
 
 .history-header.active {
-  background: #10b981;
+  background: var(--brand-fill);
   color: #ffffff;
-  border-color: #10b981;
+  border-color: var(--green-light);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
@@ -607,14 +610,14 @@ function formatDate(dateStr) {
   max-height: 520px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--border) transparent;
 }
 
 .history-status,
 .history-empty {
   padding: 1.5rem 1rem;
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -625,8 +628,8 @@ function formatDate(dateStr) {
 }
 
 .history-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   cursor: pointer;
@@ -634,14 +637,14 @@ function formatDate(dateStr) {
 }
 
 .history-item:hover {
-  border-color: #10b981;
-  background: #ffffff;
+  border-color: var(--green-light);
+  background: var(--surface);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .history-item.selected {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: var(--green-light);
+  background: var(--green-50);
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
@@ -657,13 +660,13 @@ function formatDate(dateStr) {
   align-items: center;
   font-weight: 700;
   font-size: 1rem;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .btn-delete-item {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.85rem;
   cursor: pointer;
   padding: 0.2rem 0.4rem;
@@ -671,28 +674,28 @@ function formatDate(dateStr) {
 }
 
 .btn-delete-item:hover {
-  color: #ef4444;
-  background: #fee2e2;
+  color: var(--danger);
+  background: var(--danger-100);
 }
 
 .history-metrics-row {
   display: flex;
   gap: 0.6rem;
   font-size: 0.78rem;
-  color: #475569;
+  color: var(--text-muted);
   font-weight: 600;
   margin-bottom: 0.3rem;
 }
 
 .history-date {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 /* Right Content Panel */
 .content-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -702,12 +705,12 @@ function formatDate(dateStr) {
   margin: 0 0 0.4rem 0;
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-dark);
 }
 
 .card-header p {
   margin: 0 0 1.25rem 0;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.95rem;
 }
 
@@ -718,7 +721,7 @@ function formatDate(dateStr) {
 }
 
 .btn-primary {
-  background: #10b981;
+  background: var(--brand-fill);
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -730,7 +733,7 @@ function formatDate(dateStr) {
 }
 
 .btn-primary:hover {
-  background: #059669;
+  background: var(--brand-fill-hover);
 }
 
 
@@ -758,18 +761,18 @@ function formatDate(dateStr) {
 .label-title {
   font-weight: 700;
   font-size: 0.9rem;
-  color: #334155;
+  color: var(--text-dark);
 }
 
 .label-unit {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .input-group input {
   width: 100%;
   padding: 0.65rem 0.85rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -778,7 +781,7 @@ function formatDate(dateStr) {
 
 .input-group input:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: var(--green-light);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
@@ -789,7 +792,7 @@ function formatDate(dateStr) {
 .btn-submit {
   width: 100%;
   padding: 0.9rem 1.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--brand-banner);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -813,8 +816,8 @@ function formatDate(dateStr) {
 /* Result Card */
 .result-card {
   margin-top: 1.75rem;
-  background: #f0fdf4;
-  border: 2px solid #6ee7b7;
+  background: var(--green-50);
+  border: 2px solid var(--green-light);
   border-radius: 14px;
   padding: 1.5rem;
 }
@@ -823,7 +826,7 @@ function formatDate(dateStr) {
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #047857;
+  color: var(--green-dark);
   margin-bottom: 0.5rem;
 }
 
@@ -836,22 +839,22 @@ function formatDate(dateStr) {
   margin: 0 0 0.25rem 0;
   font-size: 1.75rem;
   font-weight: 800;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .hero-text p {
   margin: 0;
   font-size: 0.95rem;
-  color: #047857;
+  color: var(--green-dark);
 }
 
 .result-footer {
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #a7f3d0;
+  border-top: 1px solid var(--green-50);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #059669;
+  color: var(--green);
 }
 
 /* Alert Box */
@@ -863,9 +866,9 @@ function formatDate(dateStr) {
 }
 
 .alert-error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #991b1b;
+  background: var(--danger-100);
+  border: 1px solid var(--danger);
+  color: var(--danger);
 }
 
 /* History Cards Grid (List Mode on Right Side) */
@@ -882,8 +885,8 @@ function formatDate(dateStr) {
 }
 
 .history-main-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
   cursor: pointer;
@@ -891,8 +894,8 @@ function formatDate(dateStr) {
 }
 
 .history-main-card:hover {
-  border-color: #10b981;
-  background: #ffffff;
+  border-color: var(--green-light);
+  background: var(--surface);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
@@ -907,12 +910,12 @@ function formatDate(dateStr) {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 800;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .date-tag {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .card-metrics-grid {
@@ -920,23 +923,23 @@ function formatDate(dateStr) {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem;
   font-size: 0.82rem;
-  color: #334155;
-  background: #ffffff;
+  color: var(--text-dark);
+  background: var(--surface);
   padding: 0.6rem;
   border-radius: 8px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg);
   margin-bottom: 0.75rem;
 }
 
 .m-label {
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .link-text {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--green-light);
 }
 
 /* Detail View Components */
@@ -953,31 +956,31 @@ function formatDate(dateStr) {
 }
 
 .btn-back {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-dark);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .btn-back:hover {
-  background: #e2e8f0;
+  background: var(--border);
 }
 
 .detail-timestamp {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .detail-hero-card {
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border: 1px solid #a7f3d0;
+  background: linear-gradient(135deg, var(--green-50) 0%, var(--green-50) 100%);
+  border: 1px solid var(--green-50);
   border-radius: 16px;
   padding: 1.5rem;
 }
@@ -985,7 +988,7 @@ function formatDate(dateStr) {
 .detail-hero-right .subhead {
   font-size: 0.75rem;
   font-weight: 800;
-  color: #047857;
+  color: var(--green-dark);
   letter-spacing: 1px;
 }
 
@@ -993,20 +996,20 @@ function formatDate(dateStr) {
   margin: 0.2rem 0;
   font-size: 1.85rem;
   font-weight: 800;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .detail-hero-right p {
   margin: 0;
   font-size: 0.85rem;
-  color: #047857;
+  color: var(--green-dark);
 }
 
 .params-section h3 {
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
 }
 
 .params-grid {
@@ -1021,9 +1024,15 @@ function formatDate(dateStr) {
   }
 }
 
+@media (max-width: 480px) {
+  .params-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .param-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.85rem;
   display: flex;
@@ -1033,14 +1042,14 @@ function formatDate(dateStr) {
 
 .param-label {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .param-value {
   font-size: 1rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-dark);
 }
 
 .detail-actions {
@@ -1054,8 +1063,8 @@ function formatDate(dateStr) {
 .btn-danger-outline {
   padding: 0.85rem 1.25rem;
   background: transparent;
-  color: #ef4444;
-  border: 1px solid #fca5a5;
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: 10px;
   font-weight: 700;
   font-size: 0.9rem;
@@ -1063,32 +1072,32 @@ function formatDate(dateStr) {
 }
 
 .btn-danger-outline:hover {
-  background: #fef2f2;
+  background: var(--danger-100);
 }
 
 .auth-required-box {
   text-align: center;
   padding: 3rem 1.5rem;
-  background: #f8fafc;
-  border: 2px dashed #cbd5e1;
+  background: var(--bg);
+  border: 2px dashed var(--border);
   border-radius: 14px;
 }
 
 .auth-required-box h2 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: #1e293b;
+  color: var(--text-dark);
 }
 
 .auth-required-box p {
   margin: 0 0 1.5rem 0;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.95rem;
 }
 
 .btn-primary-link {
   display: inline-block;
-  background: #10b981;
+  background: var(--brand-fill);
   color: #ffffff;
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
@@ -1098,38 +1107,38 @@ function formatDate(dateStr) {
 }
 
 .btn-primary-link:hover {
-  background: #059669;
+  background: var(--brand-fill-hover);
 }
 
 /* Weather Loaded Banner */
 .weather-loaded-banner {
-  background: #f0fdf4;
-  border: 1px solid #a7f3d0;
-  border-left: 4px solid #10b981;
+  background: var(--green-50);
+  border: 1px solid var(--green-50);
+  border-left: 4px solid var(--green-light);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .banner-title {
   font-size: 1rem;
   font-weight: 800;
   margin-bottom: 0.35rem;
-  color: #064e3b;
+  color: var(--green-dark);
 }
 
 .banner-desc {
   font-size: 0.9rem;
   margin: 0 0 0.35rem 0;
   line-height: 1.4;
-  color: #065f46;
+  color: var(--green-dark);
 }
 
 .banner-subtext {
   font-size: 0.85rem;
   margin: 0;
-  color: #047857;
+  color: var(--green-dark);
   font-weight: 600;
 }
 

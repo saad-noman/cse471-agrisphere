@@ -2,16 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const User = require('../models/User');
 const Expert = require('../models/Expert');
+const Rating = require('../models/Rating');
+const { recalculateAggregate } = require('./ratingController');
+const sendError = require('../utils/sendError');
 
-// Best-effort delete of an uploaded file — a missing file is not an error here.
+// To best-effort delete an uploaded file
 const deleteUploadedFile = (imagePath) => {
   if (!imagePath) return;
   fs.unlink(path.join('uploads', path.basename(imagePath)), () => {});
 };
 
 // GET /api/users/me
-// Returns the logged-in user's profile. If the user is an expert, their
-// Expert profile is included too, so the Edit Profile form can show it.
+// To get the logged-in user's profile (with their Expert profile too, if applicable)
 const getProfile = async (req, res) => {
   try {
     const user = req.user;
@@ -23,12 +25,12 @@ const getProfile = async (req, res) => {
 
     res.json({ user, expert });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // PUT /api/users/me
-// Updates the basic User fields, and — for experts — the linked Expert profile too.
+// To update the logged-in user's profile (and their linked Expert profile, if applicable)
 const updateProfile = async (req, res) => {
   try {
     const { name, phone, district, upazila } = req.body;
@@ -89,13 +91,12 @@ const updateProfile = async (req, res) => {
 
     res.json({ user, expert });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // POST /api/users/me/photo
-// Saves the uploaded photo path as the user's profileImage (and the linked
-// Expert profile's, if the user is an expert).
+// To upload and save the logged-in user's profile photo
 const uploadProfilePhoto = async (req, res) => {
   try {
     if (!req.file) {
@@ -116,12 +117,12 @@ const uploadProfilePhoto = async (req, res) => {
 
     res.json({ user });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // DELETE /api/users/me/photo
-// Clears the profileImage field (and the linked Expert's, if applicable) and removes the file.
+// To remove the logged-in user's profile photo
 const deleteProfilePhoto = async (req, res) => {
   try {
     deleteUploadedFile(req.user.profileImage);
@@ -138,16 +139,25 @@ const deleteProfilePhoto = async (req, res) => {
 
     res.json({ user });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // DELETE /api/users/me
-// Deletes the logged-in user's account, along with their linked Expert profile and photo, if any.
+// To delete the logged-in user's account and all their related data
 const deleteProfile = async (req, res) => {
   try {
     if (req.user.role === 'expert') {
-      await Expert.findOneAndDelete({ userId: req.user._id });
+      const expert = await Expert.findOneAndDelete({ userId: req.user._id });
+      if (expert) {
+        await Rating.deleteMany({ targetType: 'expert', targetId: expert._id });
+      }
+    }
+
+    const authoredRatings = await Rating.find({ farmerId: req.user._id }, 'targetType targetId').lean();
+    await Rating.deleteMany({ farmerId: req.user._id });
+    for (const { targetType, targetId } of authoredRatings) {
+      await recalculateAggregate(targetType, targetId);
     }
 
     deleteUploadedFile(req.user.profileImage);
@@ -155,7 +165,7 @@ const deleteProfile = async (req, res) => {
 
     res.json({ message: 'Account deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 

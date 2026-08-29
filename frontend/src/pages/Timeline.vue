@@ -708,12 +708,12 @@ onMounted(() => {
 
 .page-header p {
   margin: 0;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .refresh-button {
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -721,7 +721,7 @@ onMounted(() => {
 }
 
 .refresh-button:hover {
-  background: #f9fafb;
+  background: var(--bg);
 }
 
 .refresh-button:disabled {
@@ -732,8 +732,8 @@ onMounted(() => {
 /* Filters */
 
 .filters-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
@@ -745,7 +745,7 @@ onMounted(() => {
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--text-muted);
 }
 
 .filter-buttons {
@@ -755,8 +755,8 @@ onMounted(() => {
 }
 
 .filter-button {
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface);
   border-radius: 8px;
   padding: 9px 14px;
   cursor: pointer;
@@ -764,13 +764,13 @@ onMounted(() => {
 }
 
 .filter-button:hover {
-  background: #f9fafb;
+  background: var(--bg);
 }
 
 .filter-button.active {
-  background: #111827;
-  color: white;
-  border-color: #111827;
+  background: var(--brand-fill);
+  color: #ffffff;
+  border-color: var(--brand-fill);
 }
 
 .date-filters {
@@ -782,7 +782,7 @@ onMounted(() => {
 
 .date-filters input {
   height: 38px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 7px;
   padding: 0 10px;
 }
@@ -792,13 +792,13 @@ onMounted(() => {
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 /* Timeline */
 
 .timeline-summary {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 14px;
   margin-bottom: 20px;
 }
@@ -814,7 +814,7 @@ onMounted(() => {
   top: 25px;
   bottom: 25px;
   width: 2px;
-  background: #e5e7eb;
+  background: var(--border);
 }
 
 .timeline-item {
@@ -837,33 +837,33 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  border: 2px solid #e5e7eb;
+  background: var(--surface);
+  border: 2px solid var(--border);
   font-size: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .marker-disease {
-  border-color: #fca5a5;
+  border-color: var(--danger);
 }
 
 .marker-recommendation {
-  border-color: #fcd34d;
+  border-color: var(--gold);
 }
 
 .marker-consultation {
-  border-color: #93c5fd;
+  border-color: var(--info-100);
 }
 
 .marker-farming {
-  border-color: #86efac;
+  border-color: var(--green-50);
 }
 
 /* Activity card */
 
 .activity-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -872,7 +872,7 @@ onMounted(() => {
 .activity-date {
   display: flex;
   gap: 8px;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
   margin-bottom: 10px;
 }
@@ -884,7 +884,7 @@ onMounted(() => {
 }
 
 .activity-type {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -895,11 +895,11 @@ onMounted(() => {
 .activity-heading h2 {
   margin: 0;
   font-size: 18px;
-  color: #111827;
+  color: var(--text-dark);
 }
 
 .activity-description {
-  color: #4b5563;
+  color: var(--text-muted);
   line-height: 1.6;
   margin: 10px 0 16px;
 }
@@ -914,24 +914,24 @@ onMounted(() => {
 }
 
 .status-completed {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--green-50);
+  color: var(--green-700);
 }
 
 .status-active {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--info-100);
+  color: var(--info);
 }
 
 .status-pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(255,193,7,.12);
+  color: var(--warning);
 }
 
 .status-cancelled,
 .status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--danger-100);
+  color: var(--danger);
 }
 
 /* Crop */
@@ -940,7 +940,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f9fafb;
+  background: var(--bg);
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 16px;
@@ -953,7 +953,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ecfdf5;
+  background: var(--green-50);
 }
 
 .crop-info strong,
@@ -966,7 +966,7 @@ onMounted(() => {
 }
 
 .crop-info span {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 12px;
   margin-top: 2px;
 }
@@ -981,7 +981,7 @@ onMounted(() => {
 
 .detail {
   min-width: 150px;
-  background: #f9fafb;
+  background: var(--bg);
   border-radius: 8px;
   padding: 10px 12px;
 }
@@ -992,7 +992,7 @@ onMounted(() => {
 
 .detail-label {
   display: block;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 11px;
   text-transform: uppercase;
   font-weight: 700;
@@ -1001,7 +1001,7 @@ onMounted(() => {
 
 .detail strong {
   font-size: 14px;
-  color: #374151;
+  color: var(--text-dark);
 }
 
 /* Tags */
@@ -1013,8 +1013,8 @@ onMounted(() => {
 }
 
 .tag {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--danger-100);
+  color: var(--danger);
   border-radius: 999px;
   padding: 4px 9px;
   font-size: 12px;
@@ -1022,8 +1022,8 @@ onMounted(() => {
 }
 
 .condition-tag {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(255,193,7,.12);
+  color: var(--warning);
 }
 
 /* Match */
@@ -1032,7 +1032,7 @@ onMounted(() => {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  background: #f9fafb;
+  background: var(--bg);
 }
 
 .match-header {
@@ -1048,14 +1048,14 @@ onMounted(() => {
 
 .match-bar {
   height: 7px;
-  background: #e5e7eb;
+  background: var(--border);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .match-progress {
   height: 100%;
-  background: #f59e0b;
+  background: var(--gold);
   border-radius: inherit;
 }
 
@@ -1076,21 +1076,21 @@ onMounted(() => {
   height: 130px;
   object-fit: cover;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 
 /* State */
 
 .state-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 50px 20px;
   text-align: center;
 }
 
 .state-card p {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .state-icon {
@@ -1099,13 +1099,13 @@ onMounted(() => {
 }
 
 .error-state {
-  border-color: #fecaca;
+  border-color: var(--danger);
 }
 
 .retry-button {
   border: none;
-  background: #111827;
-  color: white;
+  background: var(--brand-fill);
+  color: #ffffff;
   padding: 9px 16px;
   border-radius: 7px;
   cursor: pointer;
@@ -1114,8 +1114,8 @@ onMounted(() => {
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #111827;
+  border: 3px solid var(--border);
+  border-top-color: var(--text-dark);
   border-radius: 50%;
   margin: 0 auto 12px;
   animation: spin 0.8s linear infinite;
@@ -1138,8 +1138,8 @@ onMounted(() => {
 }
 
 .pagination button {
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   border-radius: 7px;
   padding: 8px 14px;
   cursor: pointer;

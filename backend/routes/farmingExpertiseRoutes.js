@@ -14,6 +14,7 @@ const {
 
 const { protect } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
+const { verifyImageOrPdfContent } = require('../middleware/uploadMiddleware');
 
 // Setup multer for expert file uploads (PNG, JPG, PDF)
 const uploadDir = path.join(__dirname, '../uploads/expertise-attachments');
@@ -53,11 +54,10 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
-// Routes
 router.post('/', protect, createRequest);
 router.get('/', protect, getRequests);
 router.get('/stock-images', protect, requireRole('expert'), getStockImages);
 router.get('/:id', protect, getRequestById);
-router.post('/:id/respond', protect, requireRole('expert'), upload.single('attachment'), provideExpertise);
+router.post('/:id/respond', protect, requireRole('expert'), upload.single('attachment'), verifyImageOrPdfContent, provideExpertise);
 
 module.exports = router;

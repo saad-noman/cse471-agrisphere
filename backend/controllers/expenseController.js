@@ -1,13 +1,10 @@
 const Expense = require('../models/Expense');
 const Crop = require('../models/Crop');
 const ProductionRecord = require('../models/ProductionRecord');
+const sendError = require('../utils/sendError');
 
-
-// ==========================================================
-// CREATE EXPENSE
 // POST /api/expenses
-// ==========================================================
-
+// To create a new farming expense
 const createExpense = async (req, res) => {
   try {
     const { cropId, category, amount, date } = req.body;
@@ -24,8 +21,6 @@ const createExpense = async (req, res) => {
       });
     }
 
-    // If a crop is supplied, make sure it exists
-    // and belongs to the logged-in farmer.
     if (cropId) {
       const crop = await Crop.findById(cropId);
 
@@ -55,18 +50,12 @@ const createExpense = async (req, res) => {
 
     res.status(201).json(expense);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// ==========================================================
-// GET MY EXPENSES
 // GET /api/expenses
-// ==========================================================
-
+// To get the logged-in farmer's expenses
 const getMyExpenses = async (req, res) => {
   try {
     const expenses = await Expense.find({
@@ -77,18 +66,12 @@ const getMyExpenses = async (req, res) => {
 
     res.json(expenses);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// ==========================================================
-// GET EXPENSE BY ID
 // GET /api/expenses/:id
-// ==========================================================
-
+// To get a single expense by id
 const getExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id)
@@ -111,18 +94,12 @@ const getExpense = async (req, res) => {
 
     res.json(expense);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// ==========================================================
-// UPDATE EXPENSE
 // PUT /api/expenses/:id
-// ==========================================================
-
+// To update an existing expense
 const updateExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
@@ -187,18 +164,12 @@ const updateExpense = async (req, res) => {
 
     res.json(expense);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// ==========================================================
-// DELETE EXPENSE
 // DELETE /api/expenses/:id
-// ==========================================================
-
+// To delete an expense
 const deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
@@ -224,25 +195,15 @@ const deleteExpense = async (req, res) => {
       message: 'Expense deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-
-// ==========================================================
-// CROP FINANCIAL ANALYSIS
 // GET /api/expenses/analysis/:cropId
-// ==========================================================
-
+// To get a crop's cost breakdown and financial summary
 const getCropFinancialAnalysis = async (req, res) => {
   try {
     const { cropId } = req.params;
-
-    // ------------------------------------------------------
-    // 1. Find crop
-    // ------------------------------------------------------
 
     const crop = await Crop.findById(cropId);
 
@@ -251,10 +212,6 @@ const getCropFinancialAnalysis = async (req, res) => {
         message: 'Crop not found',
       });
     }
-
-    // ------------------------------------------------------
-    // 2. Check ownership
-    // ------------------------------------------------------
 
     if (
       req.user.role === 'farmer' &&
@@ -265,10 +222,6 @@ const getCropFinancialAnalysis = async (req, res) => {
       });
     }
 
-    // ------------------------------------------------------
-    // 3. Get production records
-    // ------------------------------------------------------
-
     const productionRecords = await ProductionRecord.find({
       crop: crop._id,
     });
@@ -277,10 +230,6 @@ const getCropFinancialAnalysis = async (req, res) => {
       (total, record) => total + Number(record.quantity || 0),
       0
     );
-
-    // ------------------------------------------------------
-    // 4. Get crop expenses
-    // ------------------------------------------------------
 
     const expenses = await Expense.find({
       farmer: crop.farmer,
@@ -294,10 +243,6 @@ const getCropFinancialAnalysis = async (req, res) => {
       0
     );
 
-    // ------------------------------------------------------
-    // 5. Cost summary by category
-    // ------------------------------------------------------
-
     const byCategory = {};
 
     expenses.forEach((expense) => {
@@ -309,13 +254,6 @@ const getCropFinancialAnalysis = async (req, res) => {
 
       byCategory[category] += Number(expense.amount || 0);
     });
-
-    // ------------------------------------------------------
-    // 6. Return analysis
-    //
-    // Revenue will be calculated separately using the
-    // external commodity price API.
-    // ------------------------------------------------------
 
     res.json({
       crop: {
@@ -354,12 +292,9 @@ const getCropFinancialAnalysis = async (req, res) => {
         'Revenue and profit require a supported external market-price symbol for this crop.',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
-
 
 module.exports = {
   createExpense,

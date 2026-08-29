@@ -1,12 +1,14 @@
 <template>
   <div class="add-organization auth-page">
-    <div class="auth-card">
+    <div class="auth-card detail-page-card">
       <h2>{{ isEditing ? 'Edit Organization' : 'Add Organization' }}</h2>
       <p class="subtitle">
         {{ isEditing ? 'Update your organization details' : 'List your organization on AgriSphere' }}
       </p>
 
       <form @submit.prevent="handleSubmit">
+        <h6 class="page-title">Basic Info</h6>
+
         <div class="mb-3">
           <label class="form-label">Name</label>
           <input v-model="form.name" type="text" class="form-control" required />
@@ -18,7 +20,7 @@
           <button
             v-if="existingPhoto"
             type="button"
-            class="btn btn-outline-danger btn-sm mb-2"
+            class="btn-pill-danger btn-pill-sm mb-2"
             @click="handlePhotoRemove"
           >
             Remove Photo
@@ -35,6 +37,8 @@
           <label class="form-label">Description</label>
           <textarea v-model="form.description" class="form-control"></textarea>
         </div>
+
+        <h6 class="page-title mt-4">Location</h6>
 
         <div class="mb-3">
           <label class="form-label">Address</label>
@@ -65,6 +69,8 @@
           </p>
         </div>
 
+        <h6 class="page-title mt-4">Contact</h6>
+
         <div class="mb-3">
           <label class="form-label">Contact Number</label>
           <input v-model="form.contactNumber" type="text" class="form-control" />
@@ -94,7 +100,7 @@
           {{ saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Organization' }}
         </button>
 
-        <p v-if="saveError" class="error-text">{{ saveError }}</p>
+        <p v-if="saveError" class="app-alert app-alert-danger">{{ saveError }}</p>
       </form>
     </div>
   </div>

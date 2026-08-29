@@ -445,7 +445,7 @@ onMounted(() => {
 
           <button
             type="button"
-            class="btn btn-secondary btn-sm"
+            class="btn-pill-outline"
             @click="closeCropDetails"
           >
             Close

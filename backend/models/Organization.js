@@ -17,6 +17,8 @@ const organizationSchema = new mongoose.Schema(
     website: { type: String },
     openingHours: { type: String },
     isConsultationCenter: { type: Boolean, default: false },
+    ratingAverage: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

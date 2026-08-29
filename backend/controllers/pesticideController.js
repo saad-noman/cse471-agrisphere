@@ -1,27 +1,22 @@
 const Crop = require('../models/Crop');
 const Pesticide = require('../models/Pesticide');
 const PesticideRecord = require('../models/PesticideRecord');
-
-//
-// ==========================================================
-// PESTICIDE LOOKUP (CATALOG)
-// ==========================================================
-//
+const sendError = require('../utils/sendError');
 
 // GET /api/pesticides
+// To list the pesticide catalog
 const getPesticides = async (req, res) => {
   try {
     const pesticides = await Pesticide.find().sort({ name: 1 });
 
     res.json(pesticides);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // POST /api/pesticides
+// To add a new pesticide to the catalog
 const createPesticide = async (req, res) => {
   try {
     const { name, category, description } = req.body;
@@ -42,13 +37,12 @@ const createPesticide = async (req, res) => {
 
     res.status(201).json(pesticide);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // GET /api/pesticides/:id
+// To get a single pesticide by id
 const getPesticide = async (req, res) => {
   try {
     const pesticide = await Pesticide.findById(req.params.id);
@@ -61,13 +55,12 @@ const getPesticide = async (req, res) => {
 
     res.json(pesticide);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // PUT /api/pesticides/:id
+// To update a pesticide in the catalog
 const updatePesticide = async (req, res) => {
   try {
     const pesticide = await Pesticide.findById(req.params.id);
@@ -78,19 +71,21 @@ const updatePesticide = async (req, res) => {
       });
     }
 
-    Object.assign(pesticide, req.body);
+    const updatable = ['name', 'category', 'description'];
+    for (const field of updatable) {
+      if (field in req.body) pesticide[field] = req.body[field];
+    }
 
     await pesticide.save();
 
     res.json(pesticide);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // DELETE /api/pesticides/:id
+// To delete a pesticide from the catalog
 const deletePesticide = async (req, res) => {
   try {
     const pesticide = await Pesticide.findById(req.params.id);
@@ -107,19 +102,12 @@ const deletePesticide = async (req, res) => {
       message: 'Pesticide deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
-//
-// ==========================================================
-// PESTICIDE APPLICATION RECORDS
-// ==========================================================
-//
-
 // POST /api/crops/:cropId/pesticides
+// To record a pesticide application on a crop
 const createPesticideRecord = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -139,20 +127,25 @@ const createPesticideRecord = async (req, res) => {
       });
     }
 
+    const { pesticide, amount, unit, applicationDate, targetPest, notes } = req.body;
     const record = await PesticideRecord.create({
       crop: crop._id,
-      ...req.body,
+      pesticide,
+      amount,
+      unit,
+      applicationDate,
+      targetPest,
+      notes,
     });
 
     res.status(201).json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // GET /api/crops/:cropId/pesticides
+// To list a crop's pesticide application records
 const getPesticideRecords = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -180,13 +173,12 @@ const getPesticideRecords = async (req, res) => {
 
     res.json(records);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // GET /api/pesticide-records/:id
+// To get a single pesticide application record
 const getPesticideRecord = async (req, res) => {
   try {
     const record = await PesticideRecord.findById(req.params.id)
@@ -210,13 +202,12 @@ const getPesticideRecord = async (req, res) => {
 
     res.json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // PUT /api/pesticide-records/:id
+// To update a pesticide application record
 const updatePesticideRecord = async (req, res) => {
   try {
     const record = await PesticideRecord.findById(req.params.id)
@@ -237,19 +228,21 @@ const updatePesticideRecord = async (req, res) => {
       });
     }
 
-    Object.assign(record, req.body);
+    const updatable = ['amount', 'unit', 'applicationDate', 'targetPest', 'notes'];
+    for (const field of updatable) {
+      if (field in req.body) record[field] = req.body[field];
+    }
 
     await record.save();
 
     res.json(record);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 // DELETE /api/pesticide-records/:id
+// To delete a pesticide application record
 const deletePesticideRecord = async (req, res) => {
   try {
     const record = await PesticideRecord.findById(req.params.id)
@@ -276,21 +269,17 @@ const deletePesticideRecord = async (req, res) => {
       message: 'Pesticide record deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 module.exports = {
-  // Catalog
   getPesticides,
   createPesticide,
   getPesticide,
   updatePesticide,
   deletePesticide,
 
-  // Records
   createPesticideRecord,
   getPesticideRecords,
   getPesticideRecord,

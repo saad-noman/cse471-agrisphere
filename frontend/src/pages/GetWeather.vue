@@ -1,16 +1,13 @@
 <template>
   <div class="weather-page">
-    <!-- Header & Headline -->
     <header class="weather-header">
       <div class="header-content">
-        
         <h1>Live Meteorological Data</h1>
         <p class="subtitle">
           Real-time weather insights, precipitation, soil moisture, and agricultural forecasts powered by Open-Meteo.
         </p>
       </div>
 
-      <!-- Location Search & Controls Bar -->
       <div class="controls-bar">
         <button class="btn-location" @click="getGeoLocation" :disabled="loading">
           <span v-if="loading" class="spinner"></span>
@@ -32,7 +29,6 @@
         </form>
       </div>
 
-      <!-- City Search Suggestions Dropdown -->
       <div v-if="searchResults.length > 0" class="search-results-dropdown">
         <div
           v-for="city in searchResults"
@@ -46,21 +42,17 @@
       </div>
     </header>
 
-    <!-- Error Alert -->
     <div v-if="errorMessage" class="error-banner">
       ⚠️ {{ errorMessage }}
     </div>
 
-    <!-- Location Label -->
     <div v-if="locationName" class="location-bar">
       <span class="location-icon">📍</span>
       <span class="location-text">{{ locationName }}</span>
       <span class="coords-tag">({{ coords.lat.toFixed(2) }}°, {{ coords.lon.toFixed(2) }}°)</span>
     </div>
 
-    <!-- Main Content Grid (Left: Current, Right: Forecast) -->
     <div v-if="currentWeather && !loading" class="weather-main-grid">
-      <!-- LEFT SIDE: CURRENT WEATHER (Matching Farming Recommendation Parameters) -->
       <section class="current-weather-card">
         <div class="card-header">
           <h2>Current Conditions</h2>
@@ -83,7 +75,6 @@
           Feels like {{ Math.round(currentWeather.apparent_temperature ?? currentWeather.temperature_2m) }}°C
         </div>
 
-        <!-- 4 Core Metrics Grid (Matching Farming Recommendation) -->
         <div class="metrics-grid">
           <div class="metric-card">
             <div class="metric-icon">🌡️</div>
@@ -118,20 +109,17 @@
           </div>
         </div>
 
-        <!-- Additional Wind Info Pill -->
         <div class="wind-info-pill">
           💨 <strong>Wind Speed:</strong> {{ currentWeather.wind_speed_10m }} km/h
           <span class="dot-sep">•</span>
           🌧️ <strong>Rain Chance:</strong> {{ currentRainChance }}%
         </div>
 
-        <!-- Agricultural Advice Note -->
         <div class="farming-tip-card">
           <h4>🌾 Farming Insight</h4>
           <p>{{ getFarmingAdvice(currentWeather, currentRainChance, currentSoilMoisture) }}</p>
         </div>
 
-        <!-- Predict Crop Based on Weather CTA Box -->
         <div class="predict-cta-box">
           <div class="cta-text-wrap">
             <span class="cta-title">Predict Crop Using Live Weather</span>
@@ -566,14 +554,14 @@ function formatDateShort(dateStr) {
   margin: 0 auto;
   padding: 1.5rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #000000;
+  color: var(--text-dark);
   box-sizing: border-box;
 }
 
 /* Header matching Farming Recommendation Page */
 .weather-header {
-  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-  color: #000000;
+  background: var(--brand-banner);
+  color: #ffffff;
   padding: 2rem;
   border-radius: 16px;
   margin-bottom: 1.5rem;
@@ -591,18 +579,18 @@ function formatDateShort(dateStr) {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #000000;
+  color: #ffffff;
 }
 
 .weather-header h1 {
   margin: 0.75rem 0 0.5rem 0;
   font-size: 2.2rem;
   font-weight: 800;
-  color: #000000;
+  color: #ffffff;
 }
 
 .subtitle {
-  color: #000000;
+  color: #ffffff;
   font-size: 1rem;
   margin: 0 0 1.5rem 0;
   max-width: 750px;
@@ -617,8 +605,8 @@ function formatDateShort(dateStr) {
 }
 
 .btn-location {
-  background: #ffffff;
-  color: #000000;
+  background: var(--surface);
+  color: var(--text-dark);
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
@@ -630,7 +618,7 @@ function formatDateShort(dateStr) {
 }
 
 .btn-location:hover {
-  background: #f0fdf4;
+  background: var(--green-50);
   transform: translateY(-1px);
 }
 
@@ -650,7 +638,7 @@ function formatDateShort(dateStr) {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.95);
-  color: #000000;
+  color: var(--text-dark);
   font-size: 0.95rem;
   font-weight: 600;
   outline: none;
@@ -658,8 +646,8 @@ function formatDateShort(dateStr) {
 }
 
 .btn-search {
-  background: #065f46;
-  color: #000000;
+  background: var(--brand-fill);
+  color: #ffffff;
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
@@ -670,13 +658,13 @@ function formatDateShort(dateStr) {
 }
 
 .btn-search:hover:not(:disabled) {
-  background: #044e39;
+  background: var(--brand-fill);
 }
 
 /* Search Dropdown */
 .search-results-dropdown {
-  background: #ffffff;
-  color: #000000;
+  background: var(--surface);
+  color: var(--text-dark);
   border-radius: 12px;
   margin-top: 0.5rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -688,27 +676,27 @@ function formatDateShort(dateStr) {
 .search-result-item {
   padding: 0.75rem 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .search-result-item:hover {
-  background: #ecfdf5;
+  background: var(--green-50);
 }
 
 .city-subtext {
   font-size: 0.85rem;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 /* Banners */
 .error-banner {
-  background: #fef2f2;
-  color: #000000;
-  border: 1px solid #fecaca;
+  background: var(--danger-100);
+  color: var(--text-dark);
+  border: 1px solid var(--danger);
   padding: 1rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
@@ -719,18 +707,18 @@ function formatDateShort(dateStr) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: var(--green-50);
+  border: 1px solid var(--green-50);
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
   word-break: break-word;
 }
 
 .coords-tag {
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
   font-size: 0.85rem;
   white-space: nowrap;
@@ -742,7 +730,7 @@ function formatDateShort(dateStr) {
   grid-template-columns: 400px 1fr;
   gap: 1.5rem;
   align-items: start;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 @media (max-width: 950px) {
@@ -753,15 +741,15 @@ function formatDateShort(dateStr) {
 
 /* Left Card: Current Weather */
 .current-weather-card {
-  background: #b4c0b9;
-  border: 1px solid #d1fae5;
+  background: var(--surface);
+  border: 1px solid var(--green-50);
   border-radius: 16px;
   padding: 1.25rem;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
   box-sizing: border-box;
   min-width: 0;
   overflow: hidden;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .card-header {
@@ -777,18 +765,18 @@ function formatDateShort(dateStr) {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
   word-break: break-word;
 }
 
 .live-pill {
-  background: #dcfce7;
-  color: #000000;
+  background: var(--green-50);
+  color: var(--text-dark);
   font-size: 0.7rem;
   font-weight: 800;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--green-50);
   white-space: nowrap;
 }
 
@@ -815,21 +803,21 @@ function formatDateShort(dateStr) {
   font-size: 3.4rem;
   font-weight: 900;
   line-height: 1;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .temp-unit {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
   margin-top: 0.25rem;
 }
 
 .condition-badge {
   display: inline-block;
   max-width: 100%;
-  background: #d1fae5;
-  color: #000000;
+  background: var(--green-50);
+  color: var(--text-dark);
   font-weight: 800;
   padding: 0.4rem 0.9rem;
   border-radius: 20px;
@@ -841,7 +829,7 @@ function formatDateShort(dateStr) {
 }
 
 .feels-like {
-  color: #000000;
+  color: var(--text-dark);
   font-size: 0.9rem;
   margin-bottom: 1.25rem;
   font-weight: 700;
@@ -858,8 +846,8 @@ function formatDateShort(dateStr) {
 }
 
 .metric-card {
-  background: #acf7a4;
-  border: 1px solid #036c1d;
+  background: var(--green-50);
+  border: 1px solid var(--green-dark);
   border-radius: 12px;
   padding: 0.75rem 0.5rem;
   display: flex;
@@ -867,7 +855,7 @@ function formatDateShort(dateStr) {
   gap: 0.4rem;
   min-width: 0; /* Allow auto-scaling without pushing out container */
   box-sizing: border-box;
-  color: #000000;
+  color: var(--text-dark);
   overflow: hidden;
 }
 
@@ -886,7 +874,7 @@ function formatDateShort(dateStr) {
 
 .metric-label {
   font-size: 0.62rem;
-  color: #000000;
+  color: var(--text-dark);
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -898,19 +886,19 @@ function formatDateShort(dateStr) {
 .metric-val {
   font-size: 1.05rem;
   font-weight: 900;
-  color: #000000;
+  color: var(--text-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .wind-info-pill {
-  background: #acf7a4;
-  border: 1px solid #000000;
+  background: var(--green-50);
+  border: 1px solid var(--text-dark);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
-  color: #000000;
+  color: var(--text-dark);
   margin-bottom: 1.25rem;
   word-break: break-word;
   font-weight: 700;
@@ -918,15 +906,15 @@ function formatDateShort(dateStr) {
 
 .dot-sep {
   margin: 0 0.3rem;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .farming-tip-card {
-  background: #acf7a4;
-  border: 1px solid #000000;
+  background: var(--green-50);
+  border: 1px solid var(--text-dark);
   border-radius: 12px;
   padding: 1rem;
-  color: #000000;
+  color: var(--text-dark);
   word-break: break-word;
   overflow-wrap: break-word;
 }
@@ -935,28 +923,28 @@ function formatDateShort(dateStr) {
   margin: 0 0 0.4rem 0;
   font-size: 0.95rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .farming-tip-card p {
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.4;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 600;
 }
 
 /* Right Column: Forecast Section */
 .forecast-section {
-  background: #b4c0b9;
-  border: 1px solid #d1fae5;
+  background: var(--surface);
+  border: 1px solid var(--green-50);
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
   box-sizing: border-box;
   min-width: max-content;
   overflow: hidden;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .forecast-header {
@@ -972,13 +960,13 @@ function formatDateShort(dateStr) {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .tab-buttons {
   display: flex;
   gap: 0.4rem;
-  background: #e6f4ea;
+  background: var(--green-50);
   padding: 0.25rem;
   border-radius: 10px;
 }
@@ -990,15 +978,15 @@ function formatDateShort(dateStr) {
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .tab-btn.active {
-  background: #10b981;
-  color: #000000;
+  background: var(--brand-fill);
+  color: #ffffff;
   box-shadow: 0 2px 5px rgba(16, 185, 129, 0.2);
 }
 
@@ -1013,12 +1001,12 @@ function formatDateShort(dateStr) {
   display: grid;
   grid-template-columns: 110px 1fr 130px 100px;
   align-items: center;
-  background: #acf7a4;
-  border: 1px solid #036c1d;
+  background: var(--green-50);
+  border: 1px solid var(--green-dark);
   padding: 0.85rem 1rem;
   border-radius: 12px;
   gap: 0.5rem;
-  color: #000000;
+  color: var(--text-dark);
   box-shadow: 0 2px 6px rgba(16, 185, 129, 0.04);
 }
 
@@ -1029,6 +1017,13 @@ function formatDateShort(dateStr) {
   }
 }
 
+@media (max-width: 400px) {
+  .daily-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
 .day-col {
   display: flex;
   flex-direction: column;
@@ -1036,13 +1031,13 @@ function formatDateShort(dateStr) {
 
 .day-name {
   font-weight: 900;
-  color: #000000;
+  color: var(--text-dark);
   font-size: 0.95rem;
 }
 
 .day-date {
   font-size: 0.75rem;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
 }
 
@@ -1058,7 +1053,7 @@ function formatDateShort(dateStr) {
 
 .weather-desc-sm {
   font-size: 0.85rem;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -1071,13 +1066,13 @@ function formatDateShort(dateStr) {
 
 .rain-badge {
   display: inline-block;
-  background: #f0fdf4;
-  color: #000000;
+  background: var(--green-50);
+  color: var(--text-dark);
   font-size: 0.78rem;
   font-weight: 800;
   padding: 0.25rem 0.6rem;
   border-radius: 12px;
-  border: 1px solid #036c1d;
+  border: 1px solid var(--green-dark);
   white-space: nowrap; /* Prevents text and % rain wrapping */
 }
 
@@ -1085,26 +1080,26 @@ function formatDateShort(dateStr) {
   text-align: right;
   font-weight: 800;
   font-size: 0.95rem;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .temp-max {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .temp-divider {
-  color: #000000;
+  color: var(--text-dark);
   margin: 0 0.2rem;
 }
 
 .temp-min {
-  color: #000000;
+  color: var(--text-dark);
 }
 
 /* 24-HOUR HOURLY TABLES (2 COLUMNS: 12 & 12) */
 .hourly-subtitle {
   font-size: 0.88rem;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
   margin: 0 0 1rem 0;
 }
@@ -1122,22 +1117,22 @@ function formatDateShort(dateStr) {
 }
 
 .table-column {
-  background: #acf7a4;
-  border: 1px solid #036c1d;
+  background: var(--green-50);
+  border: 1px solid var(--green-dark);
   border-radius: 12px;
   padding: 0.85rem;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.04);
   min-width: flex;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .column-header-title {
   font-size: 0.88rem;
   font-weight: 900;
-  color: #000000;
+  color: var(--text-dark);
   padding-bottom: 0.6rem;
   margin-bottom: 0.6rem;
-  border-bottom: 2px solid #036c1d;
+  border-bottom: 2px solid var(--green-dark);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1151,34 +1146,34 @@ function formatDateShort(dateStr) {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .weather-table th {
-  background: #f0fdf4;
-  color: #000000;
+  background: var(--green-50);
+  color: var(--text-dark);
   font-weight: 900;
   text-align: left;
   padding: 0.5rem 0.4rem;
   font-size: 0.75rem;
   text-transform: uppercase;
-  border-bottom: 1px solid #036c1d;
+  border-bottom: 1px solid var(--green-dark);
 }
 
 .weather-table td {
   padding: 0.5rem 0.4rem;
-  border-bottom: 1px solid #036c1d;
+  border-bottom: 1px solid var(--green-dark);
   vertical-align: middle;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .weather-table tr:hover td {
-  background: #d1fae5;
+  background: var(--green-50);
 }
 
 .time-cell {
   font-weight: 800;
-  color: #000000;
+  color: var(--text-dark);
   white-space: nowrap;
 }
 
@@ -1192,7 +1187,7 @@ function formatDateShort(dateStr) {
 
 .temp-cell {
   font-weight: 900;
-  color: #000000;
+  color: var(--text-dark);
   white-space: nowrap;
 }
 
@@ -1208,13 +1203,13 @@ function formatDateShort(dateStr) {
 
 .day-name {
   font-weight: 900;
-  color: #000000;
+  color: var(--text-dark);
   font-size: 0.88rem;
 }
 
 .day-date {
   font-size: 0.7rem;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
 }
 
@@ -1222,25 +1217,25 @@ function formatDateShort(dateStr) {
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 800;
-  color: #000000;
-  background: #f0fdf4;
+  color: var(--text-dark);
+  background: var(--green-50);
   padding: 0.15rem 0.45rem;
   border-radius: 8px;
-  border: 1px solid #036c1d;
+  border: 1px solid var(--green-dark);
   white-space: nowrap; /* Prevent wrapping percentage and rain text */
 }
 
 .table-rain-badge.high-rain {
-  color: #000000;
-  background: #e0f2fe;
-  border-color: #bae6fd;
+  color: var(--text-dark);
+  background: var(--info-100);
+  border-color: var(--info-100);
 }
 
 /* Predict CTA Box */
 .predict-cta-box {
   margin-top: 1.25rem;
-  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-  color: #000000;
+  background: var(--brand-banner);
+  color: var(--text-dark);
   padding: 1.1rem 1.25rem;
   border-radius: 14px;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
@@ -1255,20 +1250,20 @@ function formatDateShort(dateStr) {
   font-weight: 900;
   display: block;
   margin-bottom: 0.25rem;
-  color: #000000;
+  color: var(--text-dark);
 }
 
 .cta-desc {
   font-size: 0.84rem;
   margin: 0;
-  color: #000000;
+  color: var(--text-dark);
   line-height: 1.35;
   font-weight: 600;
 }
 
 .btn-predict-cta {
-  background: #ffffff;
-  color: #000000;
+  background: var(--surface);
+  color: var(--text-dark);
   border: none;
   padding: 0.75rem 1rem;
   border-radius: 10px;
@@ -1282,7 +1277,7 @@ function formatDateShort(dateStr) {
 }
 
 .btn-predict-cta:hover {
-  background: #f0fdf4;
+  background: var(--green-50);
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
@@ -1291,15 +1286,15 @@ function formatDateShort(dateStr) {
 .loading-state {
   text-align: center;
   padding: 4rem 1rem;
-  color: #000000;
+  color: var(--text-dark);
   font-weight: 700;
 }
 
 .spinner-large {
   width: 40px;
   height: 40px;
-  border: 4px solid #d1fae5;
-  border-top-color: #10b981;
+  border: 4px solid var(--green-50);
+  border-top-color: var(--green-light);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem auto;

@@ -1,6 +1,6 @@
 <template>
   <div class="profile auth-page">
-    <div class="auth-card">
+    <div class="auth-card" style="max-width: 600px">
       <h2>Edit Profile</h2>
       <p class="subtitle">Update your account details</p>
 
@@ -23,7 +23,7 @@
         <button
           v-if="photoUrl"
           type="button"
-          class="btn btn-outline-danger btn-sm mt-2 ms-2"
+          class="btn-pill-danger btn-pill-sm mt-2 ms-2"
           @click="handlePhotoDelete"
         >
           Delete Photo
@@ -60,6 +60,10 @@
         <template v-if="authState.user?.role === 'expert'">
           <hr />
           <p class="subtitle">Expert Details</p>
+
+          <div class="mb-3">
+            <StarRating :value="ratingAverage" :count="ratingCount" />
+          </div>
 
           <div class="mb-3">
             <label class="form-label">Specialization</label>
@@ -187,7 +191,7 @@
       </form>
 
       <hr />
-      <button type="button" class="btn btn-outline-danger w-100" @click="handleAccountDelete">
+      <button type="button" class="btn-pill-danger w-100" @click="handleAccountDelete">
         Delete My Account
       </button>
       <p v-if="deleteError" class="error-text">{{ deleteError }}</p>
@@ -207,18 +211,17 @@ import {
   deleteProfile,
 } from '../services/profileService';
 import { searchOrganizations } from '../services/organizationService';
+import { serverUrl } from '../services/api';
 import { useClickOutside } from '../composables/useClickOutside';
+import StarRating from '../components/StarRating.vue';
 
+import { confirmDelete } from '../stores/confirm';
 const router = useRouter();
 const deleteError = ref('');
 const organizationFieldRef = ref(null);
 useClickOutside(organizationFieldRef, () => {
   organizationResults.value = [];
 });
-
-// The backend returns profileImage as "/uploads/xxx.jpg" — the API base URL
-// includes "/api", so that part is stripped to get the plain server URL.
-const serverUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '');
 
 const name = ref('');
 const email = ref('');
@@ -248,6 +251,8 @@ const address = ref('');
 const availabilityStatus = ref('available');
 const latitude = ref(null);
 const longitude = ref(null);
+const ratingAverage = ref(0);
+const ratingCount = ref(0);
 
 const loading = ref(false);
 const error = ref('');
@@ -281,6 +286,8 @@ onMounted(async () => {
       availabilityStatus.value = expert.availabilityStatus || 'available';
       latitude.value = expert.latitude ?? null;
       longitude.value = expert.longitude ?? null;
+      ratingAverage.value = expert.ratingAverage || 0;
+      ratingCount.value = expert.ratingCount || 0;
     }
   } catch (err) {
     error.value = 'Could not load your profile. Please try again.';
@@ -322,7 +329,10 @@ async function handlePhotoDelete() {
 async function handleAccountDelete() {
   deleteError.value = '';
 
-  const confirmed = window.confirm('This will permanently delete your account. Are you sure?');
+  const confirmed = await confirmDelete(
+    'This will permanently delete your account and cannot be undone. Are you sure?',
+    { title: 'Delete account', confirmText: 'Delete account' }
+  );
   if (!confirmed) return;
 
   try {

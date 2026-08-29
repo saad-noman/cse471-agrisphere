@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Verifies the JWT sent in the Authorization header and attaches the user to req.user.
+// To verify the request's JWT and attach the logged-in user to req.user
 const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -25,7 +25,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Optional auth: attaches user if token is present, but continues if not.
+// To attach the user if a valid token is present, without requiring one
 const optionalProtect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -38,15 +38,14 @@ const optionalProtect = async (req, res, next) => {
         req.user = user;
       }
     } catch (err) {
-      // Token expired or invalid, continue without req.user
+      /* continue without req.user */
     }
   }
 
   next();
 };
 
-// Restricts a route to specific roles. Use after `protect`.
-// Example: router.get('/', protect, authorize('admin'), handler)
+// To restrict a route to specific roles (used after `protect`)
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

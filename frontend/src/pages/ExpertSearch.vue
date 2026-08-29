@@ -3,7 +3,9 @@
     <h2 class="mb-4">Agricultural Experts</h2>
 
     <div ref="filterMenuRef" class="nav-dropdown mb-4">
-      <button type="button" class="btn-pill-outline" @click="showFilters = !showFilters">Filters &#9662;</button>
+      <button type="button" class="btn-pill-outline" @click="showFilters = !showFilters">
+        Filters {{ showFilters ? '▲' : '▼' }}
+      </button>
       <div v-if="showFilters" class="nav-dropdown-menu filter-menu">
         <form @submit.prevent="handleSearch">
           <label class="form-label mb-1">Search by name</label>
@@ -18,15 +20,23 @@
           <label class="form-label mb-1">Upazila</label>
           <input v-model="filters.upazila" type="text" class="form-control mb-2" placeholder="Upazila" />
 
+          <label class="form-label mb-1">Sort by</label>
+          <select v-model="filters.sort" class="form-control mb-2">
+            <option value="">Name</option>
+            <option value="rating">Highest rated</option>
+          </select>
+
           <div class="d-flex gap-2 mt-2">
             <button type="submit" class="btn-pill">Search</button>
-            <button type="button" class="btn btn-outline-secondary" @click="clearFilters">Clear Filters</button>
+            <button type="button" class="btn-pill-secondary" @click="clearFilters">Clear Filters</button>
           </div>
         </form>
       </div>
     </div>
 
-    <p v-if="experts.length === 0">No experts found.</p>
+    <p v-if="experts.length === 0" class="empty-state">
+      {{ hasActiveFilters ? 'No experts match your filters.' : 'No experts found.' }}
+    </p>
     <div class="list-group">
       <div
         v-for="expert in experts"
@@ -38,6 +48,7 @@
         <img v-if="expert.profileImage" :src="serverUrl + expert.profileImage" alt="" class="org-thumb" />
         <div>
           <div class="fw-bold">{{ expert.fullName }}</div>
+          <StarRating :value="expert.ratingAverage || 0" :count="expert.ratingCount || 0" />
           <div v-if="expert.specialization">{{ expert.specialization }}</div>
           <div v-if="expert.district || expert.upazila" class="text-muted small">
             {{ expert.upazila }} {{ expert.district }}
@@ -54,7 +65,7 @@
             </router-link>
             <span v-else>{{ expert.organization }}</span>
           </div>
-          <span class="badge" :class="expert.availabilityStatus === 'available' ? 'bg-success' : 'bg-secondary'">
+          <span class="status-badge" :class="expert.availabilityStatus === 'available' ? 'status-success' : 'status-neutral'">
             {{ expert.availabilityStatus }}
           </span>
         </div>
@@ -64,19 +75,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { serverUrl } from '../services/api';
 import { searchExperts } from '../services/expertService';
 import { useClickOutside } from '../composables/useClickOutside';
+import StarRating from '../components/StarRating.vue';
 
 const router = useRouter();
 const experts = ref([]);
-const filters = ref({ search: '', specialization: '', district: '', upazila: '' });
+const filters = ref({ search: '', specialization: '', district: '', upazila: '', sort: '' });
 const showFilters = ref(false);
 const filterMenuRef = ref(null);
 useClickOutside(filterMenuRef, () => {
   showFilters.value = false;
+});
+
+const hasActiveFilters = computed(function () {
+  const values = Object.values(filters.value);
+
+  for (let i = 0; i < values.length; i++) {
+    if (values[i].trim() !== '') {
+      return true;
+    }
+  }
+
+  return false;
 });
 
 onMounted(loadExperts);
@@ -92,7 +116,7 @@ function handleSearch() {
 }
 
 function clearFilters() {
-  filters.value = { search: '', specialization: '', district: '', upazila: '' };
+  filters.value = { search: '', specialization: '', district: '', upazila: '', sort: '' };
   showFilters.value = false;
   loadExperts();
 }

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import api from '../services/api';
-const apiBase = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
+import api, { serverUrl as apiBase } from '../services/api';
 import { authState } from '../stores/auth';
 
 const selectedCaseId = ref(null);
@@ -101,7 +100,7 @@ onMounted(loadCases);
     </h1>
 
     <div
-      class="alert alert-danger"
+      class="app-alert app-alert-danger"
       v-if="error"
     >
       {{ error }}
@@ -120,7 +119,7 @@ onMounted(loadCases);
           </div>
 
           <div
-            class="card-body"
+            class="card-body loading-state"
             v-if="loadingCases"
           >
             Loading...
@@ -182,7 +181,7 @@ onMounted(loadCases);
           v-if="loadingDetails"
           class="card shadow-sm"
         >
-          <div class="card-body">
+          <div class="card-body loading-state">
 
             Loading case...
 
@@ -237,7 +236,7 @@ onMounted(loadCases);
             <!-- OFFICIAL EXPERT DIAGNOSIS REPORT -->
             <div
               v-if="selectedCase.diagnosisReport"
-              class="alert alert-success border border-success mt-3 p-3"
+              class="app-alert app-alert-success mt-3"
             >
               <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
                 <h4 class="alert-heading mb-0 text-success fw-bold">
@@ -329,7 +328,7 @@ onMounted(loadCases);
 
             <div
               v-if="matches.length === 0"
-              class="alert alert-secondary"
+              class="empty-state"
             >
               No matching diseases were found.
 

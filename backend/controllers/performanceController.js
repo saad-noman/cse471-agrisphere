@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const sendError = require('../utils/sendError');
 
 const Crop = require('../models/Crop');
 const ProductionRecord = require('../models/ProductionRecord');
@@ -7,6 +8,7 @@ const PesticideRecord = require('../models/PesticideRecord');
 const Expense = require('../models/Expense');
 
 // GET /api/crops/:cropId/performance
+// To get one crop's production, input and cost performance
 const getCropPerformance = async (req, res) => {
   try {
     const { cropId } = req.params;
@@ -25,7 +27,6 @@ const getCropPerformance = async (req, res) => {
       });
     }
 
-    // Farmers can only see their own crops.
     if (
       req.user.role === 'farmer' &&
       crop.farmer.toString() !== req.user.id
@@ -35,7 +36,6 @@ const getCropPerformance = async (req, res) => {
       });
     }
 
-    // Fetch all records belonging to this crop.
     const [
       productionRecords,
       fertilizerRecords,
@@ -58,10 +58,6 @@ const getCropPerformance = async (req, res) => {
       }).sort({ date: 1 }),
     ]);
 
-    // -----------------------------
-    // Production
-    // -----------------------------
-
     const totalProduction = productionRecords.reduce(
       (total, record) => total + (Number(record.quantity) || 0),
       0
@@ -72,15 +68,10 @@ const getCropPerformance = async (req, res) => {
         ? productionRecords[0].unit || 'kg'
         : 'kg';
 
-    // Yield per acre
     const area = Number(crop.area) || 0;
 
     const yieldPerAcre =
       area > 0 ? totalProduction / area : null;
-
-    // -----------------------------
-    // Fertilizer
-    // -----------------------------
 
     const totalFertilizer = fertilizerRecords.reduce(
       (total, record) => total + (Number(record.amount) || 0),
@@ -95,10 +86,6 @@ const getCropPerformance = async (req, res) => {
     const fertilizerApplicationCount =
       fertilizerRecords.length;
 
-    // -----------------------------
-    // Pesticide
-    // -----------------------------
-
     const totalPesticide = pesticideRecords.reduce(
       (total, record) => total + (Number(record.amount) || 0),
       0
@@ -111,10 +98,6 @@ const getCropPerformance = async (req, res) => {
 
     const pesticideApplicationCount =
       pesticideRecords.length;
-
-    // -----------------------------
-    // Expenses
-    // -----------------------------
 
     const totalExpenses = expenseRecords.reduce(
       (total, expense) => total + (Number(expense.amount) || 0),
@@ -131,13 +114,8 @@ const getCropPerformance = async (req, res) => {
         (Number(expense.amount) || 0);
     });
 
-    // -----------------------------
-    // Farming cycle
-    // -----------------------------
-
     const plantingDate = crop.plantingDate || null;
 
-    // Use the latest harvest date from production records.
     let harvestDate = null;
 
     if (productionRecords.length > 0) {
@@ -145,7 +123,6 @@ const getCropPerformance = async (req, res) => {
         productionRecords[productionRecords.length - 1].harvestDate;
     }
 
-    // Calculate cycle duration when both dates exist.
     let cycleDays = null;
 
     if (plantingDate && harvestDate) {
@@ -158,10 +135,6 @@ const getCropPerformance = async (req, res) => {
         Math.ceil(difference / (1000 * 60 * 60 * 24))
       );
     }
-
-    // -----------------------------
-    // Response
-    // -----------------------------
 
     res.json({
       crop: {
@@ -209,17 +182,14 @@ const getCropPerformance = async (req, res) => {
   } catch (err) {
     console.error('Crop performance error:', err);
 
-    res.status(500).json({
-      message: 'Failed to calculate crop performance',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to calculate crop performance', err);
   }
 };
 
 // GET /api/farms/performance
+// To get performance across all of the farmer's crops
 const getFarmPerformance = async (req, res) => {
   try {
-    // Only analyze crops belonging to the logged-in farmer.
     const cropQuery =
       req.user.role === 'farmer'
         ? { farmer: req.user.id }
@@ -254,7 +224,6 @@ const getFarmPerformance = async (req, res) => {
           }),
         ]);
 
-        // Production
         const totalProduction = productionRecords.reduce(
           (sum, record) => sum + (Number(record.quantity) || 0),
           0
@@ -267,26 +236,22 @@ const getFarmPerformance = async (req, res) => {
             ? totalProduction / area
             : null;
 
-        // Fertilizer
         const totalFertilizer = fertilizerRecords.reduce(
           (sum, record) => sum + (Number(record.amount) || 0),
           0
         );
 
-        // Pesticide
         const totalPesticide = pesticideRecords.reduce(
           (sum, record) => sum + (Number(record.amount) || 0),
           0
         );
 
-        // Expenses
         const totalExpenses = expenseRecords.reduce(
           (sum, expense) =>
             sum + (Number(expense.amount) || 0),
           0
         );
 
-        // Latest harvest date
         let harvestDate = null;
 
         if (productionRecords.length > 0) {
@@ -301,7 +266,6 @@ const getFarmPerformance = async (req, res) => {
           }
         }
 
-        // Farming cycle duration
         let cycleDays = null;
 
         if (crop.plantingDate && harvestDate) {
@@ -367,7 +331,6 @@ const getFarmPerformance = async (req, res) => {
       })
     );
 
-    // Overall farm totals
     const totals = performance.reduce(
       (result, item) => {
         result.production +=
@@ -404,10 +367,7 @@ const getFarmPerformance = async (req, res) => {
   } catch (err) {
     console.error('Farm performance error:', err);
 
-    res.status(500).json({
-      message: 'Failed to calculate farm performance',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to calculate farm performance', err);
   }
 };
 

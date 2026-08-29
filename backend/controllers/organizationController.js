@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const Organization = require('../models/Organization');
+const Rating = require('../models/Rating');
+const sendError = require('../utils/sendError');
 
 
 const deleteUploadedFile = (imagePath) => {
@@ -8,48 +10,60 @@ const deleteUploadedFile = (imagePath) => {
   fs.unlink(path.join('uploads', path.basename(imagePath)), () => {});
 };
 
-// GET /api/organizations?search=name&category=&district=&upazila=
-// Public. Lists all organizations, optionally filtered by name search, category,
-// district, and upazila (used for public browsing, the owner's "My Organizations"
-// list, and the "search organization" box on the expert profile form).
+// GET /api/organizations
+// To list/search organizations, optionally filtered by name, category, district or upazila
 const listOrganizations = async (req, res) => {
   try {
-    const { search, category, district, upazila } = req.query;
+    const search = req.query.search;
+    const category = req.query.category;
+    const district = req.query.district;
+    const upazila = req.query.upazila;
+    const sort = req.query.sort;
+
     const filter = {};
 
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
+
     if (category) {
       filter.category = { $regex: category, $options: 'i' };
     }
+
     if (district) {
       filter.district = { $regex: district, $options: 'i' };
     }
+
     if (upazila) {
       filter.upazila = { $regex: upazila, $options: 'i' };
     }
 
-    const organizations = await Organization.find(filter).sort({ name: 1 });
+    // Sort by rating when asked, otherwise alphabetically by name
+    let sortOption = { name: 1 };
+    if (sort === 'rating') {
+      sortOption = { ratingAverage: -1, ratingCount: -1 };
+    }
+
+    const organizations = await Organization.find(filter).sort(sortOption);
     res.json(organizations);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // GET /api/organizations/mine
-// Organization owner only. Lists the organizations this owner has added.
+// To list the organizations the logged-in owner has added
 const getMyOrganizations = async (req, res) => {
   try {
     const organizations = await Organization.find({ ownerId: req.user._id }).sort({ name: 1 });
     res.json(organizations);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // GET /api/organizations/:id
-// Public. Used by the organization details page.
+// To get a single organization's details
 const getOrganization = async (req, res) => {
   try {
     const organization = await Organization.findById(req.params.id);
@@ -58,12 +72,12 @@ const getOrganization = async (req, res) => {
     }
     res.json(organization);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // POST /api/organizations
-// Organization owner only. Creates a new organization owned by the logged-in user.
+// To create a new organization owned by the logged-in user
 const createOrganization = async (req, res) => {
   try {
     const { name } = req.body;
@@ -79,13 +93,12 @@ const createOrganization = async (req, res) => {
 
     res.status(201).json(organization);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // PUT /api/organizations/:id
-// Organization owner only, and only for organizations they own.
-// If a new photo is uploaded, it replaces the old one (old file is removed).
+// To update an organization the logged-in user owns
 const updateOrganization = async (req, res) => {
   try {
     const organization = await Organization.findById(req.params.id);
@@ -137,12 +150,12 @@ const updateOrganization = async (req, res) => {
     await organization.save();
     res.json(organization);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // DELETE /api/organizations/:id/photo
-// Organization owner only, and only for organizations they own.
+// To remove an organization's photo
 const deleteOrganizationPhoto = async (req, res) => {
   try {
     const organization = await Organization.findById(req.params.id);
@@ -160,12 +173,12 @@ const deleteOrganizationPhoto = async (req, res) => {
 
     res.json(organization);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // DELETE /api/organizations/:id
-// Organization owner only, and only for organizations they own.
+// To delete an organization the logged-in user owns
 const deleteOrganization = async (req, res) => {
   try {
     const organization = await Organization.findById(req.params.id);
@@ -179,9 +192,10 @@ const deleteOrganization = async (req, res) => {
 
     deleteUploadedFile(organization.photo);
     await organization.deleteOne();
+    await Rating.deleteMany({ targetType: 'organization', targetId: organization._id });
     res.json({ message: 'Organization deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 

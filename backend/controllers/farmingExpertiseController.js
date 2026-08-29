@@ -2,9 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const FarmingExpertiseRequest = require('../models/FarmingExpertiseRequest');
 const Notification = require('../models/Notification');
+const sendError = require('../utils/sendError');
 
 // POST /api/farming-expertise
-// Farmer submits a new farming expertise request
+// To submit a new farming expertise request
 const createRequest = async (req, res) => {
   try {
     const { cropName, comment } = req.body;
@@ -29,12 +30,12 @@ const createRequest = async (req, res) => {
     });
   } catch (err) {
     console.error('createRequest error:', err);
-    res.status(500).json({ message: 'Failed to submit request', error: err.message });
+    sendError(res, 500, 'Failed to submit request', err);
   }
 };
 
 // GET /api/farming-expertise
-// List farming expertise requests
+// To list farming expertise requests
 const getRequests = async (req, res) => {
   try {
     const filter = {};
@@ -50,17 +51,16 @@ const getRequests = async (req, res) => {
     res.json(requests);
   } catch (err) {
     console.error('getRequests error:', err);
-    res.status(500).json({ message: 'Failed to fetch requests', error: err.message });
+    sendError(res, 500, 'Failed to fetch requests', err);
   }
 };
 
 // GET /api/farming-expertise/stock-images
-// Returns list of available stock crop JPG images in backend/uploads/stock-crops/
+// To list the available stock crop images
 const getStockImages = async (req, res) => {
   try {
     const stockDir = path.join(__dirname, '../uploads/stock-crops');
-    
-    // Ensure directory exists
+
     if (!fs.existsSync(stockDir)) {
       fs.mkdirSync(stockDir, { recursive: true });
     }
@@ -82,12 +82,12 @@ const getStockImages = async (req, res) => {
     res.json(stockImages);
   } catch (err) {
     console.error('getStockImages error:', err);
-    res.status(500).json({ message: 'Failed to fetch stock images', error: err.message });
+    sendError(res, 500, 'Failed to fetch stock images', err);
   }
 };
 
 // GET /api/farming-expertise/:id
-// Get details of a single request
+// To get a single farming expertise request's details
 const getRequestById = async (req, res) => {
   try {
     const request = await FarmingExpertiseRequest.findById(req.params.id)
@@ -105,12 +105,12 @@ const getRequestById = async (req, res) => {
     res.json(request);
   } catch (err) {
     console.error('getRequestById error:', err);
-    res.status(500).json({ message: 'Failed to fetch request details', error: err.message });
+    sendError(res, 500, 'Failed to fetch request details', err);
   }
 };
 
 // POST /api/farming-expertise/:id/respond
-// Expert submits expertise response (description + optional upload or stock image)
+// To let an expert respond to a farming expertise request
 const provideExpertise = async (req, res) => {
   try {
     const { id } = req.params;
@@ -128,7 +128,6 @@ const provideExpertise = async (req, res) => {
     let attachment = null;
     let attachmentType = null;
 
-    // Check if an uploaded file was provided
     if (req.file) {
       attachment = `/uploads/expertise-attachments/${req.file.filename}`;
       const ext = path.extname(req.file.filename).toLowerCase();
@@ -150,7 +149,6 @@ const provideExpertise = async (req, res) => {
     expertiseRequest.status = 'answered';
     await expertiseRequest.save();
 
-    // Create notification for farmer
     await Notification.create({
       userId: expertiseRequest.farmer,
       message: `An expert has provided expertise for your ${expertiseRequest.cropName} request.`,
@@ -167,7 +165,7 @@ const provideExpertise = async (req, res) => {
     });
   } catch (err) {
     console.error('provideExpertise error:', err);
-    res.status(500).json({ message: 'Failed to submit expertise response', error: err.message });
+    sendError(res, 500, 'Failed to submit expertise response', err);
   }
 };
 

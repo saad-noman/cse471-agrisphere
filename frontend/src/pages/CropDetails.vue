@@ -12,7 +12,7 @@
 
       <router-link
         to="/farm-records"
-        class="btn btn-secondary"
+        class="btn-pill-outline"
       >
         Back
       </router-link>
@@ -77,7 +77,7 @@
             </p>
 
             <button
-              class="btn btn-success"
+              class="btn-pill"
               @click="activeTab='production'"
             >
               Manage
@@ -100,7 +100,7 @@
             </p>
 
             <button
-              class="btn btn-primary"
+              class="btn-pill"
               @click="activeTab='fertilizer'"
             >
               Manage
@@ -123,7 +123,7 @@
             </p>
 
             <button
-              class="btn btn-warning"
+              class="btn-pill"
               @click="activeTab='pesticide'"
             >
               Manage

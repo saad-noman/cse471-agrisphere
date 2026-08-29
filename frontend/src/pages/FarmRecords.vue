@@ -102,7 +102,7 @@
 
           </div>
 
-          <button class="btn btn-success mt-3">
+          <button class="btn-pill mt-3">
             Add Field
           </button>
 
@@ -139,13 +139,13 @@
 
             <router-link
               :to="`/farm-records/${crop._id}`"
-              class="btn btn-success btn-sm me-2"
+              class="btn-pill me-2"
             >
               Open
             </router-link>
 
             <button
-              class="btn btn-sm btn-outline-danger"
+              class="btn-pill-danger btn-pill-sm"
 
               @click="deleteCrop(crop._id)"
             >
@@ -166,6 +166,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+import { confirmDelete } from '../stores/confirm';
 const API = 'http://localhost:5000/api';
 
 const token = localStorage.getItem('token');
@@ -220,7 +221,7 @@ async function createCrop() {
 }
 
 async function deleteCrop(id) {
-  if (!confirm('Delete this crop?')) return;
+  if (!(await confirmDelete('Are you sure you want to delete this crop?'))) return;
 
   await axios.delete(
     `${API}/crops/${id}`,

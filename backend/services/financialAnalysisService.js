@@ -27,42 +27,28 @@ lookup.set(normalize(item.name), item);
 return lookup;
 };
 
+// To calculate a farmer's revenue, cost and profit summary using live commodity prices
 const calculateFinancialAnalysis = async (farmerId) => {
-// --------------------------------------------------
-// 1. Get farmer's crops
-// --------------------------------------------------
 const crops = await Crop.find({
 farmer: farmerId,
 }).lean();
 
 const cropIds = crops.map((crop) => crop._id);
 
-// --------------------------------------------------
-// 2. Get production records
-// --------------------------------------------------
 const productionRecords = await ProductionRecord.find({
 crop: { $in: cropIds },
 })
 .populate('crop')
 .lean();
 
-// --------------------------------------------------
-// 3. Get farmer expenses
-// --------------------------------------------------
 const expenses = await Expense.find({
 farmer: farmerId,
 }).lean();
 
-// --------------------------------------------------
-// 4. Get ALL supported symbols from external API
-// --------------------------------------------------
 const supportedSymbols = await getSupportedSymbols();
 
 const commodityLookup = buildCommodityLookup(supportedSymbols);
 
-// --------------------------------------------------
-// 5. Determine which commodity symbols we need
-// --------------------------------------------------
 const requestedSymbols = new Set();
 
 for (const crop of crops) {
@@ -76,9 +62,6 @@ if (commodity) {
 
 }
 
-// --------------------------------------------------
-// 6. Get current market prices
-// --------------------------------------------------
 const latestRates = await getLatestRates(
 Array.from(requestedSymbols)
 );
@@ -86,9 +69,6 @@ Array.from(requestedSymbols)
 const rates = latestRates.rates || {};
 const metadata = latestRates.metadata || {};
 
-// --------------------------------------------------
-// 7. Calculate revenue for each crop
-// --------------------------------------------------
 const cropAnalysis = crops.map((crop) => {
 const cropName = normalize(crop.cropType);
 
@@ -163,27 +143,18 @@ return {
 
 });
 
-// --------------------------------------------------
-// 8. Calculate total revenue
-// --------------------------------------------------
 const totalRevenue = cropAnalysis.reduce(
 (total, crop) =>
 total + (crop.revenue !== null ? Number(crop.revenue) : 0),
 0
 );
 
-// --------------------------------------------------
-// 9. Calculate total expenses
-// --------------------------------------------------
 const totalCost = expenses.reduce(
 (total, expense) =>
 total + Number(expense.amount || 0),
 0
 );
 
-// --------------------------------------------------
-// 10. Cost summary by category
-// --------------------------------------------------
 const costMap = {};
 
 for (const expense of expenses) {
@@ -204,14 +175,8 @@ amount,
 })
 );
 
-// --------------------------------------------------
-// 11. Profit
-// --------------------------------------------------
 const profit = totalRevenue - totalCost;
 
-// --------------------------------------------------
-// 12. Profit margin
-// --------------------------------------------------
 const profitMargin =
 totalRevenue > 0
 ? (profit / totalRevenue) * 100
@@ -247,4 +212,3 @@ generatedAt: new Date(),
 module.exports = {
 calculateFinancialAnalysis,
 };
-

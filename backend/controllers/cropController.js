@@ -1,7 +1,9 @@
 const Crop = require('../models/Crop');
+const sendError = require('../utils/sendError');
 
 
 // POST /api/crops
+// To create a new crop for the logged-in farmer
 const createCrop = async (req, res) => {
   try {
     const crop = await Crop.create({
@@ -11,14 +13,13 @@ const createCrop = async (req, res) => {
 
     res.status(201).json(crop);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 
 // GET /api/crops
+// To list the logged-in farmer's crops
 const getMyCrops = async (req, res) => {
   try {
     let filter = {};
@@ -32,14 +33,13 @@ const getMyCrops = async (req, res) => {
 
     res.json(crops);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 
 // GET /api/crops/:cropId
+// To get a single crop's details
 const getCrop = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -61,14 +61,13 @@ const getCrop = async (req, res) => {
 
     res.json(crop);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 
 // PUT /api/crops/:cropId
+// To update a crop's details
 const updateCrop = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -88,20 +87,25 @@ const updateCrop = async (req, res) => {
       });
     }
 
-    Object.assign(crop, req.body);
+    const updatable = [
+      'name', 'cropType', 'variety', 'season', 'area', 'areaUnit',
+      'plantingDate', 'expectedHarvestDate', 'location', 'notes', 'status',
+    ];
+    for (const field of updatable) {
+      if (field in req.body) crop[field] = req.body[field];
+    }
 
     await crop.save();
 
     res.json(crop);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
 
 // DELETE /api/crops/:cropId
+// To delete a crop
 const deleteCrop = async (req, res) => {
   try {
     const crop = await Crop.findById(req.params.cropId);
@@ -127,9 +131,7 @@ const deleteCrop = async (req, res) => {
       message: 'Crop deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 

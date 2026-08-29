@@ -1,5 +1,8 @@
 const https = require('https');
+const sendError = require('../utils/sendError');
 
+// GET /api/weather
+// To get the current weather and forecast for a location
 const getWeather = async (req, res) => {
   try {
     const lat = req.query.lat || 23.8103;
@@ -21,10 +24,10 @@ const getWeather = async (req, res) => {
         }
       });
     }).on('error', (err) => {
-      return res.status(500).json({ message: 'Failed to fetch weather data', error: err.message });
+      return sendError(res, 500, 'Failed to fetch weather data', err);
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to fetch weather data', error: error.message });
+    return sendError(res, 500, 'Failed to fetch weather data', error);
   }
 };
 

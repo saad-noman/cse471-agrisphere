@@ -1,7 +1,10 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const FarmingRecommendation = require('../models/FarmingRecommendation');
+const sendError = require('../utils/sendError');
 
+// POST /api/farming-recommendation/predict
+// To predict the most suitable crop from soil/weather inputs
 const predictCrop = (req, res) => {
   try {
     const payload = req.body || {};
@@ -40,18 +43,12 @@ const predictCrop = (req, res) => {
 
     pythonProcess.on('close', async (code) => {
       if (code !== 0) {
-        return res.status(500).json({
-          message: 'Crop prediction failed',
-          error: stderr.trim() || 'The Python inference script exited with an error.',
-        });
+        return sendError(res, 500, 'Crop prediction failed', new Error(stderr.trim() || 'The Python inference script exited with an error.'));
       }
 
       const crop = stdout.trim();
       if (!crop) {
-        return res.status(500).json({
-          message: 'Crop prediction failed',
-          error: 'The inference script returned no prediction.',
-        });
+        return res.status(500).json({ message: 'Crop prediction failed' });
       }
 
       try {
@@ -72,15 +69,16 @@ const predictCrop = (req, res) => {
 
         return res.json({ crop, record: savedRecord });
       } catch (saveError) {
-        console.error('Failed to save prediction record to database:', saveError);
-        return res.status(500).json({ message: 'Failed to save prediction record', error: saveError.message });
+        return sendError(res, 500, 'Failed to save prediction record', saveError);
       }
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Crop prediction failed', error: error.message });
+    return sendError(res, 500, 'Crop prediction failed', error);
   }
 };
 
+// GET /api/farming-recommendation/history
+// To get the logged-in user's crop recommendation history
 const getHistory = async (req, res) => {
   try {
     const history = await FarmingRecommendation.find({ user: req.user._id })
@@ -88,10 +86,12 @@ const getHistory = async (req, res) => {
       .limit(100);
     return res.json(history);
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to fetch recommendation history', error: error.message });
+    return sendError(res, 500, 'Failed to fetch recommendation history', error);
   }
 };
 
+// GET /api/farming-recommendation/history/:id
+// To get a single crop recommendation record
 const getHistoryById = async (req, res) => {
   try {
     const record = await FarmingRecommendation.findOne({ _id: req.params.id, user: req.user._id });
@@ -100,23 +100,21 @@ const getHistoryById = async (req, res) => {
     }
     return res.json(record);
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to fetch record', error: error.message });
+    return sendError(res, 500, 'Failed to fetch record', error);
   }
 };
 
+// DELETE /api/farming-recommendation/history/:id
+// To delete a crop recommendation record
 const deleteHistory = async (req, res) => {
   try {
-    if (req.user.role !== 'expert') {
-      return res.status(403).json({ message: 'Forbidden: Farmers cannot delete recommendation records. Only experts can delete their own records.' });
-    }
-
     const record = await FarmingRecommendation.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!record) {
       return res.status(404).json({ message: 'Recommendation record not found or unauthorized' });
     }
     return res.json({ message: 'Record deleted successfully', id: req.params.id });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to delete record', error: error.message });
+    return sendError(res, 500, 'Failed to delete record', error);
   }
 };
 

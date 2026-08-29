@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import api from '../services/api'
 import { authState } from '../stores/auth'
 
+import { confirmDelete } from '../stores/confirm';
 const diseases = ref([])
 const symptomTags = ref([])
 
@@ -201,7 +202,8 @@ async function createDisease() {
  * Delete a disease from the library.
  */
 async function deleteDisease(id) {
-  if (!confirm('Delete this disease?')) {
+  const confirmed = await confirmDelete('Are you sure you want to delete this disease?')
+  if (!confirmed) {
     return
   }
 
@@ -264,14 +266,14 @@ onMounted(async () => {
 
     <div
       v-if="successMessage"
-      class="alert alert-success"
+      class="app-alert app-alert-success"
     >
       {{ successMessage }}
     </div>
 
     <div
       v-if="error"
-      class="alert alert-danger"
+      class="app-alert app-alert-danger"
     >
       {{ error }}
     </div>
@@ -441,7 +443,7 @@ onMounted(async () => {
 
               <button
                 type="submit"
-                class="btn btn-success"
+                class="btn-pill"
                 :disabled="submitting"
               >
 
@@ -524,7 +526,7 @@ onMounted(async () => {
 
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-danger"
+                  class="btn-pill-danger btn-pill-sm"
                   @click="deleteDisease(disease._id)"
                 >
                   Delete

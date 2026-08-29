@@ -72,14 +72,14 @@
 
           </div>
 
-          <button class="btn btn-success mt-3">
+          <button class="btn-pill mt-3">
             {{ editing ? 'Update Record' : 'Add Record' }}
           </button>
 
           <button
             v-if="editing"
             type="button"
-            class="btn btn-secondary mt-3 ms-2"
+            class="btn-pill-outline mt-3 ms-2"
             @click="resetForm"
           >
             Cancel
@@ -120,14 +120,14 @@
           <div>
 
             <button
-              class="btn btn-primary btn-sm me-2"
+              class="btn-pill-outline me-2"
               @click="editRecord(record)"
             >
               Edit
             </button>
 
             <button
-              class="btn btn-danger btn-sm"
+              class="btn-pill-danger btn-pill-sm"
               @click="deleteRecord(record._id)"
             >
               Delete
@@ -147,6 +147,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+import { confirmDelete } from '../stores/confirm';
 const props = defineProps({
   cropId: String,
 });
@@ -238,7 +239,7 @@ function editRecord(record) {
 
 async function deleteRecord(id) {
 
-  if (!confirm('Delete record?')) return;
+  if (!(await confirmDelete('Are you sure you want to delete this fertilizer record?'))) return;
 
   await axios.delete(
     `${API}/fertilizer-records/${id}`,

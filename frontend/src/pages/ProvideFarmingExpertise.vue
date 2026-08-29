@@ -1,9 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import api from '../services/api';
+import api, { serverUrl as apiBase } from '../services/api';
 import { authState } from '../stores/auth';
-
-const apiBase = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
 
 const requests = ref([]);
 const selectedRequestId = ref(null);
@@ -202,11 +200,11 @@ onMounted(() => {
         </p>
       </div>
 
-      <div v-if="errorMessage" class="alert alert-danger mb-4">
+      <div v-if="errorMessage" class="app-alert app-alert-danger mb-4">
         {{ errorMessage }}
       </div>
 
-      <div v-if="successMessage" class="alert alert-success mb-4">
+      <div v-if="successMessage" class="app-alert app-alert-success mb-4">
         {{ successMessage }}
       </div>
 
@@ -400,7 +398,7 @@ onMounted(() => {
                       <h6 class="fw-bold mb-2">Select a Stock Crop Preset:</h6>
                       
                       <div v-if="stockImages.length === 0" class="text-muted small py-2">
-                        No stock images found in <code>backend/uploads/stock-crops/</code>. Drop your 34 JPG files into that folder to see them here!
+                        No stock images found in database!
                       </div>
 
                       <div v-else class="d-flex flex-wrap gap-2 max-stock-grid">
@@ -447,7 +445,7 @@ onMounted(() => {
                   </div>
 
                   <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success px-4 py-2" :disabled="submitting">
+                    <button type="submit" class="btn-pill" :disabled="submitting">
                       <span v-if="submitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
                       Submit Expertise Response
                     </button>
@@ -466,4 +464,24 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.request-list .list-group-item.active,
+.request-list .list-group-item.active h6 {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .request-list .list-group-item.active,
+[data-theme='dark'] .request-list .list-group-item.active h6 {
+  color: var(--green-900);
+}
+[data-theme='dark'] .request-list .list-group-item.active .text-muted {
+  color: var(--green-800) !important;
+}
+[data-theme='dark'] .request-list .list-group-item:hover,
+[data-theme='dark'] .request-list .list-group-item:hover h6,
+[data-theme='dark'] .request-list .list-group-item:hover .text-muted {
+  color: #ffffff !important;
+}
+</style>
 

@@ -27,6 +27,9 @@
           <p v-if="selectedExpert" class="auth-switch" style="text-align: left; margin-top: 4px">
             Selected: {{ selectedExpert.fullName }}
           </p>
+          <p v-if="selectedExpert?.availabilityStatus === 'unavailable'" class="error-text" style="margin-top: 4px">
+            This expert is currently marked unavailable. You can still submit a request, but a response may be delayed.
+          </p>
         </div>
 
         <div class="mb-3">
@@ -76,18 +79,18 @@
           {{ submitting ? 'Submitting...' : 'Submit Request' }}
         </button>
 
-        <p v-if="submitError" class="error-text">{{ submitError }}</p>
-        <p v-if="submitSuccess" class="auth-switch">Request submitted successfully.</p>
+        <p v-if="submitError" class="app-alert app-alert-danger">{{ submitError }}</p>
+        <p v-if="submitSuccess" class="app-alert app-alert-success">Request submitted successfully.</p>
       </form>
     </div>
 
     <h4 class="mb-3">Your Requests</h4>
-    <p v-if="myRequests.length === 0">You haven't submitted any requests yet.</p>
-    <ul class="list-group" style="max-width: 600px">
+    <p v-if="myRequests.length === 0" class="empty-state">You haven't submitted any requests yet.</p>
+    <ul class="list-group my-requests-list" style="max-width: 600px">
       <li v-for="request in myRequests" :key="request._id" class="list-group-item">
         <div class="fw-bold">{{ request.title }}</div>
         <div class="text-muted small">To: {{ request.expertId?.fullName }}</div>
-        <span class="badge" :class="statusBadgeClass(request.status)">{{ request.status }}</span>
+        <span class="status-badge" :class="statusBadgeClass(request.status)">{{ request.status }}</span>
       </li>
     </ul>
   </div>
@@ -95,9 +98,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { searchExperts } from '../services/expertService';
+import { useRoute } from 'vue-router';
+import { searchExperts, getExpert } from '../services/expertService';
 import { createConsultationRequest, getMyRequests } from '../services/consultationService';
 import { useClickOutside } from '../composables/useClickOutside';
+
+const route = useRoute();
 
 const expertSearch = ref('');
 const expertResults = ref([]);
@@ -124,7 +130,18 @@ const submitError = ref('');
 const submitSuccess = ref(false);
 const myRequests = ref([]);
 
-onMounted(loadMyRequests);
+onMounted(async () => {
+  await loadMyRequests();
+
+  if (route.query.expertId) {
+    try {
+      const response = await getExpert(route.query.expertId);
+      selectExpert(response.data);
+    } catch (err) {
+      // Ignore an invalid/expired expertId in the query string; the user can still search manually.
+    }
+  }
+});
 
 async function loadMyRequests() {
   const response = await getMyRequests();
@@ -152,10 +169,10 @@ function handleFileChange(event) {
 }
 
 function statusBadgeClass(status) {
-  if (status === 'approved' || status === 'completed') return 'bg-success';
-  if (status === 'rejected') return 'bg-danger';
-  if (status === 'rescheduled') return 'bg-warning text-dark';
-  return 'bg-secondary';
+  if (status === 'approved' || status === 'completed') return 'status-success';
+  if (status === 'rejected' || status === 'cancelled') return 'status-danger';
+  if (status === 'rescheduled') return 'status-warning';
+  return 'status-neutral';
 }
 
 async function handleSubmit() {

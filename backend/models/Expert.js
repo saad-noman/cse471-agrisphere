@@ -24,6 +24,8 @@ const expertSchema = new mongoose.Schema(
     availabilityStatus: { type: String, enum: ['available', 'unavailable'], default: 'available' },
     latitude: { type: Number },
     longitude: { type: Number },
+    ratingAverage: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Expert = require('../models/Expert');
+const sendError = require('../utils/sendError');
 
 const createToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -9,11 +10,10 @@ const createToken = (user) => {
   });
 };
 
-// Roles a user is allowed to pick for themselves at sign-up.
-// 'admin' is intentionally excluded — admin accounts are not self-registerable.
 const PUBLIC_ROLES = ['farmer', 'expert', 'organization_owner'];
 
 // POST /api/auth/register
+// To register a new user account
 const register = async (req, res) => {
   try {
     const { name, email, password, role, phone, district, upazila, specialization } = req.body;
@@ -42,8 +42,6 @@ const register = async (req, res) => {
       upazila,
     });
 
-    // Experts also get a linked Expert profile so they show up in expert search right away.
-    // The rest of the expert-specific fields can be filled in later from the Edit Profile page.
     if (user.role === 'expert') {
       await Expert.create({
         userId: user._id,
@@ -62,11 +60,12 @@ const register = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // POST /api/auth/login
+// To log in an existing user
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -91,7 +90,7 @@ const login = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 

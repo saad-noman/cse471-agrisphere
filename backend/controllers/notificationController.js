@@ -1,11 +1,17 @@
 const Notification = require('../models/Notification');
 const Appointment = require('../models/Appointment');
 const Expert = require('../models/Expert');
+const sendError = require('../utils/sendError');
 
-// Creates a reminder notification for any of the user's scheduled appointments
-// happening within the next 24 hours that haven't been reminded about yet.
-// This runs whenever notifications are fetched, so no separate scheduler/cron
-// job is needed.
+// To get an appointment's actual start time by combining its date and time fields
+const getAppointmentStart = (appointment) => {
+  const start = new Date(appointment.date);
+  const [hours, minutes] = (appointment.time || '00:00').split(':').map(Number);
+  start.setUTCHours(hours || 0, minutes || 0, 0, 0);
+  return start;
+};
+
+// To create reminder notifications for appointments starting within 24 hours
 const createDueReminders = async (user) => {
   let filter;
 
@@ -17,12 +23,19 @@ const createDueReminders = async (user) => {
     filter = { farmerId: user._id };
   }
 
-  const soon = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const dueAppointments = await Appointment.find({
+  const now = new Date();
+  const soon = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  const candidates = await Appointment.find({
     ...filter,
     status: 'scheduled',
     reminderSent: false,
-    date: { $gte: new Date(), $lte: soon },
+    date: { $gte: new Date(now.getTime() - 24 * 60 * 60 * 1000), $lte: soon },
+  });
+
+  const dueAppointments = candidates.filter((appointment) => {
+    const startsAt = getAppointmentStart(appointment);
+    return startsAt >= now && startsAt <= soon;
   });
 
   for (const appointment of dueAppointments) {
@@ -37,6 +50,7 @@ const createDueReminders = async (user) => {
 };
 
 // GET /api/notifications
+// To get the logged-in user's notifications (also triggers due reminders)
 const listNotifications = async (req, res) => {
   try {
     await createDueReminders(req.user);
@@ -47,11 +61,12 @@ const listNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 
 // PUT /api/notifications/:id/read
+// To mark a notification as read
 const markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findOneAndUpdate(
@@ -61,7 +76,7 @@ const markAsRead = async (req, res) => {
     );
     res.json(notification);
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    sendError(res, 500, 'Something went wrong', err);
   }
 };
 

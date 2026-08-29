@@ -5,7 +5,7 @@
     <div class="container py-4" :class="{ 'org-content-with-sidebar': authState.user?.role === 'organization_owner' }">
       <h2 class="mb-4">My Organizations</h2>
 
-      <p v-if="organizations.length === 0">You haven't added any organizations yet.</p>
+      <p v-if="organizations.length === 0" class="empty-state">You haven't added any organizations yet.</p>
       <ul class="list-group">
         <li
           v-for="org in organizations"
@@ -20,10 +20,10 @@
             </span>
           </span>
           <span>
-            <router-link :to="`/organizations/edit/${org._id}`" class="btn btn-outline-secondary btn-sm me-2">
+            <router-link :to="`/organizations/edit/${org._id}`" class="btn-pill-secondary btn-pill-sm me-2">
               Edit
             </router-link>
-            <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDelete(org)">
+            <button type="button" class="btn-pill-danger btn-pill-sm" @click="handleDelete(org)">
               Delete
             </button>
           </span>
@@ -41,6 +41,7 @@ import { serverUrl } from '../services/api';
 import { getMyOrganizations, deleteOrganization } from '../services/organizationService';
 import OrganizationSidebar from '../components/OrganizationSidebar.vue';
 
+import { confirmDelete } from '../stores/confirm';
 const organizations = ref([]);
 const deleteError = ref('');
 
@@ -52,7 +53,7 @@ onMounted(async () => {
 async function handleDelete(org) {
   deleteError.value = '';
 
-  const confirmed = window.confirm(`Delete "${org.name}"? This cannot be undone.`);
+  const confirmed = await confirmDelete(`Are you sure you want to delete "${org.name}"? This cannot be undone.`);
   if (!confirmed) return;
 
   try {

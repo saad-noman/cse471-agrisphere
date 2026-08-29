@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { upload } = require('../middleware/uploadMiddleware');
+const { upload, verifyImageContent } = require('../middleware/uploadMiddleware');
 const {
   createRequest,
   getMyRequests,
@@ -14,7 +14,7 @@ const {
   completeAppointment,
 } = require('../controllers/consultationController');
 
-router.post('/requests', protect, authorize('farmer'), upload.single('attachment'), createRequest);
+router.post('/requests', protect, authorize('farmer'), upload.single('attachment'), verifyImageContent, createRequest);
 router.get('/requests/mine', protect, authorize('farmer'), getMyRequests);
 router.get('/requests/pending', protect, authorize('expert'), getPendingRequests);
 router.put('/requests/:id/approve', protect, authorize('expert'), approveRequest);

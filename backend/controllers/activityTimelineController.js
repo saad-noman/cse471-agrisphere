@@ -9,26 +9,8 @@ const FertilizerRecord = require('../models/FertilizerRecord');
 const PesticideRecord = require('../models/PesticideRecord');
 const ProductionRecord = require('../models/ProductionRecord');
 
-/*
- * GET /api/activity-timeline
- *
- * Returns a normalized chronological activity timeline for the
- * authenticated farmer.
- *
- * Supported query params:
- *
- * ?type=disease
- * ?type=consultation
- * ?type=recommendation
- * ?type=farming
- *
- * ?from=2026-01-01
- * ?to=2026-08-18
- *
- * ?page=1
- * ?limit=20
- */
-
+// GET /api/activity-timeline
+// To get the farmer's activity timeline (disease, consultation, recommendation and farming events)
 const getActivityTimeline = async (req, res) => {
   try {
     const farmerId = req.user._id;
@@ -42,7 +24,6 @@ const getActivityTimeline = async (req, res) => {
     let page = parseInt(req.query.page, 10) || 1;
     let limit = parseInt(req.query.limit, 10) || 20;
 
-    // Prevent unreasonable pagination values
     page = Math.max(page, 1);
     limit = Math.min(Math.max(limit, 1), 100);
 
@@ -60,12 +41,6 @@ const getActivityTimeline = async (req, res) => {
         message: `Invalid type. Allowed values: ${allowedTypes.join(', ')}`,
       });
     }
-
-    /*
-     * ---------------------------------------------------------
-     * DATE FILTER
-     * ---------------------------------------------------------
-     */
 
     let startDate;
     let endDate;
@@ -91,10 +66,6 @@ const getActivityTimeline = async (req, res) => {
         });
       }
 
-      /*
-       * If the user provides only a date such as 2026-08-18,
-       * include the complete day.
-       */
       if (/^\d{4}-\d{2}-\d{2}$/.test(to)) {
         endDate.setHours(23, 59, 59, 999);
       }
@@ -107,10 +78,6 @@ const getActivityTimeline = async (req, res) => {
       });
     }
 
-    /*
-     * Check whether an event date falls within the requested
-     * date range.
-     */
     const inDateRange = (date) => {
       if (!date) {
         return false;
@@ -143,12 +110,6 @@ const getActivityTimeline = async (req, res) => {
 
     const timeline = [];
 
-    /*
-     * =========================================================
-     * DISEASE CASES
-     * =========================================================
-     */
-
     if (includeType('disease')) {
       const diseaseCases = await DiseaseCase.find({
         farmer: farmerId,
@@ -157,23 +118,11 @@ const getActivityTimeline = async (req, res) => {
         .populate('farmingConditions', 'name type')
         .sort({ createdAt: -1 });
 
-      /*
-       * Load disease library once.
-       *
-       * We calculate the current possible disease matches
-       * against the symptoms stored on the disease case.
-       */
       const diseases = await Disease.find()
         .populate('symptoms', 'name')
         .lean();
 
       for (const diseaseCase of diseaseCases) {
-        /*
-         * -----------------------------------------------------
-         * Disease case submitted
-         * -----------------------------------------------------
-         */
-
         if (inDateRange(diseaseCase.createdAt)) {
           timeline.push({
             id: diseaseCase._id.toString(),
@@ -223,12 +172,6 @@ const getActivityTimeline = async (req, res) => {
             },
           });
         }
-
-        /*
-         * -----------------------------------------------------
-         * Current possible disease matches
-         * -----------------------------------------------------
-         */
 
         const reportedSymptoms = new Set(
           diseaseCase.symptoms.map((symptom) =>
@@ -291,12 +234,6 @@ const getActivityTimeline = async (req, res) => {
             );
           });
 
-        /*
-         * We only expose the best match as a timeline event.
-         *
-         * This avoids flooding the timeline when the disease
-         * library contains many possible diseases.
-         */
         const bestMatch = matches[0];
 
         if (
@@ -357,10 +294,6 @@ const getActivityTimeline = async (req, res) => {
                   })
                 ),
 
-              /*
-               * Important:
-               * This is NOT a medical/agricultural diagnosis.
-               */
               confidence: 'possible',
             },
 
@@ -372,12 +305,6 @@ const getActivityTimeline = async (req, res) => {
         }
       }
     }
-
-    /*
-     * =========================================================
-     * CONSULTATIONS
-     * =========================================================
-     */
 
     if (includeType('consultation')) {
       const requests =
@@ -418,12 +345,6 @@ const getActivityTimeline = async (req, res) => {
             $in: appointmentIds,
           },
         });
-
-      /*
-       * -----------------------------------------------------
-       * Consultation requests
-       * -----------------------------------------------------
-       */
 
       for (const request of requests) {
         if (!inDateRange(request.createdAt)) {
@@ -482,12 +403,6 @@ const getActivityTimeline = async (req, res) => {
           },
         });
       }
-
-      /*
-       * -----------------------------------------------------
-       * Appointments
-       * -----------------------------------------------------
-       */
 
       for (const appointment of appointments) {
         const appointmentDate =
@@ -550,12 +465,6 @@ const getActivityTimeline = async (req, res) => {
         });
       }
 
-      /*
-       * -----------------------------------------------------
-       * Completed consultation records
-       * -----------------------------------------------------
-       */
-
       for (const record of records) {
         const recordDate =
           record.completedAt ||
@@ -601,12 +510,6 @@ const getActivityTimeline = async (req, res) => {
         });
       }
     }
-
-    /*
-     * =========================================================
-     * RECOMMENDATIONS
-     * =========================================================
-     */
 
     if (includeType('recommendation')) {
       const recommendations =
@@ -675,28 +578,12 @@ const getActivityTimeline = async (req, res) => {
       }
     }
 
-    /*
-     * =========================================================
-     * FARMING ACTIVITIES
-     * =========================================================
-     */
-
     if (includeType('farming')) {
-      /*
-       * -----------------------------------------------------
-       * Crops
-       * -----------------------------------------------------
-       */
-
       const crops = await Crop.find({
         farmer: farmerId,
       }).sort({ createdAt: -1 });
 
       for (const crop of crops) {
-        /*
-         * Crop created
-         */
-
         if (inDateRange(crop.createdAt)) {
           timeline.push({
             id: `${crop._id.toString()}-created`,
@@ -742,13 +629,6 @@ const getActivityTimeline = async (req, res) => {
           });
         }
 
-        /*
-         * Crop planting
-         *
-         * This is a real farming activity because the model
-         * explicitly stores plantingDate.
-         */
-
         if (
           crop.plantingDate &&
           inDateRange(crop.plantingDate)
@@ -783,12 +663,6 @@ const getActivityTimeline = async (req, res) => {
           });
         }
       }
-
-      /*
-       * -----------------------------------------------------
-       * Fertilizer applications
-       * -----------------------------------------------------
-       */
 
       const fertilizerRecords =
         await FertilizerRecord.find({
@@ -873,12 +747,6 @@ const getActivityTimeline = async (req, res) => {
           },
         });
       }
-
-      /*
-       * -----------------------------------------------------
-       * Pesticide applications
-       * -----------------------------------------------------
-       */
 
       const pesticideRecords =
         await PesticideRecord.find({
@@ -967,12 +835,6 @@ const getActivityTimeline = async (req, res) => {
         });
       }
 
-      /*
-       * -----------------------------------------------------
-       * Harvest / production
-       * -----------------------------------------------------
-       */
-
       const productionRecords =
         await ProductionRecord.find({
           crop: {
@@ -1048,24 +910,12 @@ const getActivityTimeline = async (req, res) => {
       }
     }
 
-    /*
-     * =========================================================
-     * SORT
-     * =========================================================
-     */
-
     timeline.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
 
       return dateB - dateA;
     });
-
-    /*
-     * =========================================================
-     * PAGINATION
-     * =========================================================
-     */
 
     const total = timeline.length;
 
@@ -1108,16 +958,10 @@ const getActivityTimeline = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(
-      'Activity timeline error:',
-      err
-    );
-
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch activity timeline',
-      error: err.message,
-    });
+    console.error('Activity timeline error:', err);
+    const body = { success: false, message: 'Failed to fetch activity timeline' };
+    if (process.env.NODE_ENV !== 'production') body.error = err.message;
+    res.status(500).json(body);
   }
 };
 

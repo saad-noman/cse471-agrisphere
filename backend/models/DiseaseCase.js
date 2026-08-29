@@ -50,8 +50,18 @@ const diseaseCaseSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['pending', 'under_review', 'diagnosed'],
+      enum: ['pending', 'under_review', 'diagnosed', 'resolved'],
       default: 'pending',
+    },
+
+    // Filled in when an expert diagnoses the case
+    diagnosisReport: {
+      expert: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      expertName: { type: String },
+      diseaseName: { type: String },
+      recommendation: { type: String },
+      additionalNotes: { type: String },
+      createdAt: { type: Date },
     },
   },
   { timestamps: true }

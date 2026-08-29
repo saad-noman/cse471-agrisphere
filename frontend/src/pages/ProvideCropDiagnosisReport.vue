@@ -1,9 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import api from '../services/api';
+import api, { serverUrl as apiBase } from '../services/api';
 import { authState } from '../stores/auth';
-
-const apiBase = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
 
 const cases = ref([]);
 const selectedCaseId = ref(null);
@@ -150,11 +148,11 @@ onMounted(loadCases);
         </div>
       </div>
 
-      <div v-if="errorMessage" class="alert alert-danger mb-4">
+      <div v-if="errorMessage" class="app-alert app-alert-danger mb-4">
         {{ errorMessage }}
       </div>
 
-      <div v-if="successMessage" class="alert alert-success mb-4">
+      <div v-if="successMessage" class="app-alert app-alert-success mb-4">
         {{ successMessage }}
       </div>
 
@@ -424,7 +422,7 @@ onMounted(loadCases);
                   </div>
 
                   <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success px-4 py-2" :disabled="submitting">
+                    <button type="submit" class="btn-pill" :disabled="submitting">
                       <span v-if="submitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
                       Submit Diagnosis Report & Mark Resolved
                     </button>

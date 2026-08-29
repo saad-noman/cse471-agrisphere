@@ -1,8 +1,10 @@
+const sendError = require('../utils/sendError');
 const {
 calculateFinancialAnalysis,
 } = require('../services/financialAnalysisService');
 
 // GET /api/financial-analysis
+// To get the farmer's revenue, cost and profit summary
 const getFinancialAnalysis = async (req, res) => {
 try {
 const analysis = await calculateFinancialAnalysis(
@@ -14,10 +16,7 @@ res.json(analysis);
 } catch (err) {
 console.error('Financial analysis error:', err);
 
-res.status(500).json({
-  message: 'Failed to generate financial analysis',
-  error: err.message,
-});
+sendError(res, 500, 'Failed to generate financial analysis', err);
 
 }
 };

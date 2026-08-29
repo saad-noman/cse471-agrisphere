@@ -2,8 +2,10 @@ const Disease = require('../models/Disease');
 const DiseaseCase = require('../models/DiseaseCase');
 const Tag = require('../models/Tag');
 const Notification = require('../models/Notification');
+const sendError = require('../utils/sendError');
 
 // POST /api/diseases
+// To submit a new disease case for expert diagnosis
 const submitDiseaseCase = async (req, res) => {
   try {
     const {
@@ -22,7 +24,6 @@ const submitDiseaseCase = async (req, res) => {
       });
     }
 
-    // multipart/form-data sends arrays as JSON strings
     let symptomTags = [];
     let conditionTags = [];
 
@@ -37,7 +38,6 @@ const submitDiseaseCase = async (req, res) => {
       });
     }
 
-    // Verify that supplied tags actually exist
     const tags = await Tag.find({
       _id: { $in: [...symptomTags, ...conditionTags] },
     });
@@ -95,15 +95,13 @@ const submitDiseaseCase = async (req, res) => {
   } catch (err) {
     console.error(err);
 
-    res.status(500).json({
-      message: 'Failed to submit disease case',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to submit disease case', err);
   }
 };
 
 
 // GET /api/diseases/tags
+// To search symptom/farming-condition tags
 const searchTags = async (req, res) => {
   try {
     const { search = '', type } = req.query;
@@ -126,14 +124,13 @@ const searchTags = async (req, res) => {
 
     res.json(tags);
   } catch (err) {
-    res.status(500).json({
-      message: 'Failed to search tags',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to search tags', err);
   }
 };
 
 
+// POST /api/diseases/tags
+// To create a new tag
 const createTag = async (req, res) => {
   try {
     const { name, type } = req.body;
@@ -174,13 +171,12 @@ const createTag = async (req, res) => {
       tag,
     });
   } catch (err) {
-    res.status(500).json({
-      message: 'Failed to create tag',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to create tag', err);
   }
 };
 
+// GET /api/diseases/:caseId/matches
+// To find diseases matching a case's reported symptoms
 const getDiseaseMatches = async (req, res) => {
   try {
     const { caseId } = req.params;
@@ -242,7 +238,6 @@ const getDiseaseMatches = async (req, res) => {
       };
     });
 
-    // Only return diseases with at least one matching symptom
     const filteredMatches = matches
       .filter((match) => match.matchedSymptomsCount > 0)
       .sort((a, b) => {
@@ -257,13 +252,12 @@ const getDiseaseMatches = async (req, res) => {
   } catch (err) {
     console.error(err);
 
-    res.status(500).json({
-      message: 'Failed to find disease matches',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to find disease matches', err);
   }
 };
 
+// POST /api/diseases/library
+// To add a new disease to the disease library
 const createDisease = async (req, res) => {
   try {
     const { name, description, symptoms } = req.body;
@@ -304,12 +298,12 @@ const createDisease = async (req, res) => {
 
     res.status(201).json(populated);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// GET /api/diseases/library
+// To list the disease library
 const getDiseases = async (req, res) => {
   try {
     const diseases = await Disease.find()
@@ -318,12 +312,12 @@ const getDiseases = async (req, res) => {
 
     res.json(diseases);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// GET /api/diseases/library/:id
+// To get a single disease's details
 const getDisease = async (req, res) => {
   try {
     const disease = await Disease.findById(req.params.id)
@@ -337,12 +331,12 @@ const getDisease = async (req, res) => {
 
     res.json(disease);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// DELETE /api/diseases/library/:id
+// To delete a disease from the disease library
 const deleteDisease = async (req, res) => {
   try {
     const disease = await Disease.findById(req.params.id);
@@ -359,17 +353,16 @@ const deleteDisease = async (req, res) => {
       message: 'Disease deleted successfully',
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    sendError(res, 500, 'Something went wrong. Please try again.', err);
   }
 };
 
+// GET /api/diseases
+// To list disease cases (a farmer's own, or all for an expert)
 const getDiseaseCases = async (req, res) => {
   try {
     let filter = {};
 
-    // Farmers only see their own cases
     if (req.user.role === 'farmer') {
       filter.farmer = req.user.id;
     }
@@ -380,13 +373,12 @@ const getDiseaseCases = async (req, res) => {
 
     res.json(cases);
   } catch (err) {
-    res.status(500).json({
-      message: 'Failed to fetch disease cases',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to fetch disease cases', err);
   }
 };
 
+// GET /api/diseases/:caseId
+// To get a single disease case's details
 const getDiseaseCase = async (req, res) => {
   try {
     const diseaseCase = await DiseaseCase.findById(req.params.caseId)
@@ -400,7 +392,6 @@ const getDiseaseCase = async (req, res) => {
       });
     }
 
-    // Farmers can only access their own cases
     if (
       req.user.role === 'farmer' &&
       diseaseCase.farmer._id.toString() !== req.user.id
@@ -412,13 +403,12 @@ const getDiseaseCase = async (req, res) => {
 
     res.json(diseaseCase);
   } catch (err) {
-    res.status(500).json({
-      message: 'Failed to fetch disease case',
-      error: err.message,
-    });
+    sendError(res, 500, 'Failed to fetch disease case', err);
   }
 };
 
+// POST /api/diseases/:caseId/diagnosis
+// To let an expert submit a diagnosis report for a disease case
 const submitDiagnosisReport = async (req, res) => {
     try {
       const { caseId } = req.params;
@@ -449,7 +439,6 @@ const submitDiagnosisReport = async (req, res) => {
       diseaseCase.status = 'resolved';
       await diseaseCase.save();
 
-      // Create a notification for the farmer
       await Notification.create({
         userId: diseaseCase.farmer,
         message: `An expert has provided a Crop Diagnosis Report for your ${diseaseCase.crop.type} case.`,
@@ -467,14 +456,12 @@ const submitDiagnosisReport = async (req, res) => {
       });
     } catch (err) {
       console.error(err);
-      res.status(500).json({
-        message: 'Failed to submit diagnosis report',
-        error: err.message,
-      });
+      sendError(res, 500, 'Failed to submit diagnosis report', err);
     }
   };
 
   // DELETE /api/diseases/tags/:tagId
+  // To delete a tag, if it isn't currently in use
   const deleteTag = async (req, res) => {
     try {
       const { tagId } = req.params;
@@ -487,7 +474,6 @@ const submitDiagnosisReport = async (req, res) => {
         });
       }
 
-      // Prevent deleting tags that are currently in use
       const inDiseaseCases = await DiseaseCase.exists({
         $or: [
           { symptoms: tagId },
@@ -511,10 +497,7 @@ const submitDiagnosisReport = async (req, res) => {
         message: 'Tag deleted successfully',
       });
     } catch (err) {
-      res.status(500).json({
-        message: 'Failed to delete tag',
-        error: err.message,
-      });
+      sendError(res, 500, 'Failed to delete tag', err);
     }
   };
 
