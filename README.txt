@@ -1,23 +1,31 @@
-cd backend
+# AgriSphere 🌱
 
-mkdir data
+**AgriSphere** is a community-driven smart agriculture platform designed to connect farmers with agricultural experts, organizations, and useful knowledge resources.
 
-# needed for Linux kernel versions 6.19 and newer
-docker run --name mongodb -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -e ME_CONFIG_BASICAUTH_USERNAME=user -e ME_CONFIG_BASICAUTH_PASSWORD=pass -e GLIBC_TUNABLES=glibc.pthread.rseq=1 -v $(pwd)/data:/data/db docker.io/mongo:8.0
+### Key Features
 
-# for getting docker interactive terminal access
-docker exec -it mongodb mongosh -u admin -p admin --authenticationDatabase admin
+* 👨‍🌾 Farmer, expert, and organization owner user accounts
+* 🔍 Search and filter agricultural experts and organizations
+* 💬 Consultation requests and scheduling
+* 💬 Real-time messaging between farmers and agricultural experts
+* 📚 Agricultural knowledge resources
+* 🏢 Find agricultural organizations
+* 🗺️ Interactive Map: Location-based expert and organization discovery
+* 🌿 Crop and plant disease detection, and crop prediction based on weather and soil quality using machine learning
+* 🤖 AI-powered agricultural assistant
 
-# For showing all how the data is structured in db
-db.getCollectionNames().forEach(function (collectionName) { print(`\n===== ${collectionName} =====`); printjson(db.getCollection(collectionName).findOne());});
+### Tech Stack
 
-# handy git commands (for rebase)
-git fetch origin
-git stash
-git rebase origin/main
-git status
-nvim edit_file_with_conflicts.txt
-git add edit_file_with_conflicts.txt
-git rebase --continue
-git stash pop
-git push --force-with-lease origin akid
+**Frontend:** Vue.js 3, Vite, Leaflet
+**Backend:** Node.js, Express.js
+**Database:** MongoDB, Mongoose
+**ML:** Python, ONNX, MobileNetV2
+**Deployment:** Vercel & Render
+
+### Authors
+
+1. Saad Noman Adeeb
+2. Aurpon Sharma
+3. Akid Anis
+
+AgriSphere aims to make agricultural knowledge, expert guidance, communication, and smart farming tools more accessible through a single platform.
