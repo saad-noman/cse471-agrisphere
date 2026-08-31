@@ -16,11 +16,11 @@
 
 ### Tech Stack
 
-**Frontend:** Vue.js 3, Vite, Leaflet
-**Backend:** Node.js, Express.js
-**Database:** MongoDB, Mongoose
-**ML:** Python, ONNX, MobileNetV2
-**Deployment:** Vercel & Render
+- **Frontend:** Vue.js 3, Vite, Leaflet
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB, Mongoose
+- **ML:** Python, ONNX, MobileNetV2
+- **Deployment:** Vercel & Render
 
 ### Authors
 
