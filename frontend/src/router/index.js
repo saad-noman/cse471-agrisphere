@@ -39,6 +39,9 @@ import Messages from '../pages/Messages.vue';
 import PricePlanner from '../pages/PricePlanner.vue';
 import Community from '../pages/Community.vue';
 import CommunityPost from '../pages/CommunityPost.vue';
+
+import SimpleDemo from '../pages/SimpleDemo.vue';
+
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
@@ -80,6 +83,7 @@ const routes = [
   { path: '/price-planner', name: 'PricePlanner', component: PricePlanner, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: Community },
   { path: '/community/:id', name: 'CommunityPost', component: CommunityPost },
+  { path: '/simple-demo', name: 'SimpleDemo', component: SimpleDemo, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

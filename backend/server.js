@@ -37,6 +37,8 @@ const pricePlanRoutes = require('./routes/pricePlanRoutes');
 const communityRoutes = require('./routes/communityRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 
+const demoRoutes = require('./routes/demoRoutes');
+
 const app = express();
 
 // To allow the configured CLIENT_URL plus any localhost dev port
@@ -105,6 +107,8 @@ app.use('/api/ratings', ratingRoutes);
 app.use('/api/price-plans', pricePlanRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/stats', statsRoutes);
+
+app.use('/api/demo', demoRoutes);
 
 // Turns upload failures into clear client errors instead of generic 500s
 app.use((err, req, res, next) => {
