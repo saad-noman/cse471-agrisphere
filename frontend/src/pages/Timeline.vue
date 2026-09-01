@@ -675,7 +675,9 @@ function getImageUrl(path) {
     return path
   }
 
-  return `http://localhost:5000${path}`
+  const serverUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '')
+
+  return `${serverUrl}${path}`
 }
 
 onMounted(() => {

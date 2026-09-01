@@ -164,7 +164,7 @@ import ProductionRecords from '../components/ProductionRecords.vue';
 import FertilizerRecords from '../components/FertilizerRecords.vue';
 import PesticideRecords from '../components/PesticideRecords.vue';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_BASE_URL;
 
 const route = useRoute();
 

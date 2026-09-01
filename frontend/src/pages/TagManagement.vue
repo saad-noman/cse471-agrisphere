@@ -293,7 +293,7 @@ import { ref, watch, onMounted } from 'vue';
 import { authState } from '../stores/auth';
 
 import { confirmDelete } from '../stores/confirm';
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const catalogType = ref('tags');
 

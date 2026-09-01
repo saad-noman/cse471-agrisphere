@@ -149,7 +149,7 @@ const props = defineProps({
   cropId: String,
 });
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_BASE_URL;
 
 const auth = {
   headers: {

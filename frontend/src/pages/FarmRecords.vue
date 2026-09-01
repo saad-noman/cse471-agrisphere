@@ -167,7 +167,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 import { confirmDelete } from '../stores/confirm';
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_BASE_URL;
 
 const token = localStorage.getItem('token');
 
