@@ -293,5 +293,6 @@ module.exports = {
   updatePlan,
   refreshPlanPrices,
   deletePlan,
+  // exported for tests
   buildItems,
 };
